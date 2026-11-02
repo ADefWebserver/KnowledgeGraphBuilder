@@ -1,4 +1,7 @@
+using System.Collections.Concurrent;
 using System.Net;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using KnowledgeGraphBuilder.Shared.Knowledge.Persistence;
 using KnowledgeGraphBuilder.Shared.Llm;
@@ -11,6 +14,8 @@ public sealed class AppSettingsService(ISettingsStore store, IHostCapabilities h
     readonly SemaphoreSlim _gate = new(1, 1);
     StoredSettings? _cached;
     IChatClient? _client;
+    static readonly TimeSpan ModelListLifetime = TimeSpan.FromHours(24);
+    readonly ConcurrentDictionary<string, (DateTimeOffset Stored, ModelListResult Result)> _models = new();
 
     public event Action? Changed;
 
@@ -101,6 +106,33 @@ public sealed class AppSettingsService(ISettingsStore store, IHostCapabilities h
             var s = await LoadAsync();
             return DescribeError(ex, LlmDefaults.HostFor(s.ProviderValue, s.Endpoint), host.IsBrowser);
         }
+    }
+
+    public async Task<ModelListResult> ListModelsAsync(LlmProvider provider, string? endpoint, string? newApiKey, bool refresh, CancellationToken ct)
+    {
+        var s = await LoadAsync();
+        var key = string.IsNullOrWhiteSpace(newApiKey) ? s.ApiKey : newApiKey.Trim();
+        // A saved key goes only to the host it was saved for, so a changed endpoint needs the key typed again.
+        if (string.IsNullOrWhiteSpace(newApiKey) && LlmDefaults.RequiresKey(provider) && !string.IsNullOrWhiteSpace(key) &&
+            (provider != s.ProviderValue || LlmDefaults.HostFor(provider, endpoint) != LlmDefaults.HostFor(s.ProviderValue, s.Endpoint)))
+            return ModelListResult.NotConfigured("Enter the API key for this provider to list its models.");
+
+        var options = new LlmOptions(provider, "", endpoint, key);
+        var cacheKey = ModelCacheKey(options);
+        if (!refresh && _models.TryGetValue(cacheKey, out var hit) && DateTimeOffset.UtcNow - hit.Stored < ModelListLifetime)
+            return hit.Result;
+
+        var result = await ModelCatalog.ListAsync(options, http, host.IsBrowser, ct);
+        if (result.Status == ModelListStatus.Success) _models[cacheKey] = (DateTimeOffset.UtcNow, result);
+        else _models.TryRemove(cacheKey, out _);
+        return result;
+    }
+
+    /// <summary>Provider, endpoint host and a short hash of the key, so the cache never holds the key itself.</summary>
+    internal static string ModelCacheKey(LlmOptions options)
+    {
+        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(options.ApiKey?.Trim() ?? "")))[..16];
+        return $"{options.Provider}|{options.Endpoint?.Trim().TrimEnd('/').ToLowerInvariant()}|{hash}";
     }
 
     /// <summary>A user-facing message for a provider failure. Never contains the API key.</summary>

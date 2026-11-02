@@ -32,6 +32,13 @@ public interface IAppSettingsService
 
     /// <returns>null when the connection works, otherwise an error message.</returns>
     Task<string?> TestConnectionAsync(CancellationToken ct);
+
+    /// <summary>
+    /// Lists the provider's models for the form's current values. <paramref name="newApiKey"/> null uses the saved key.
+    /// Successful lists are cached for a day; <paramref name="refresh"/> skips the cache.
+    /// </summary>
+    Task<ModelListResult> ListModelsAsync(LlmProvider provider, string? endpoint, string? newApiKey, bool refresh, CancellationToken ct);
+
     event Action? Changed;
 }
 

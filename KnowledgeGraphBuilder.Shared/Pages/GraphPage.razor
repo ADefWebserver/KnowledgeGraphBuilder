@@ -1,0 +1,267 @@
+@page "/graph"
+@implements IDisposable
+@inject IKnowledgeGraphIndex Graph
+@inject IKnowledgeWorkspace Workspace
+@inject NavigationManager Nav
+@inject BrowserInterop Browser
+
+<PageTitle>Graph · Knowledge Graph Builder</PageTitle>
+
+<section class="kgb-graph" aria-label="Graph">
+    <div class="kgb-gbar">
+        <RadzenSelectBar TValue="bool" Value="@local" ValueChanged="@SetScopeAsync" Size="ButtonSize.Small" aria-label="Graph scope">
+            <Items>
+                <RadzenSelectBarItem Text="Whole graph" Value="false" />
+                <RadzenSelectBarItem Text="Around page" Value="true" Disabled="@(P is null)" title="@(P is null ? "Select a page first" : P)" />
+            </Items>
+        </RadzenSelectBar>
+        @if (local)
+        {
+            <RadzenDropDown TValue="int" Data="@depths" Value="@lastDepth" ValueChanged="@SetDepthAsync" TextProperty="Text" ValueProperty="Value"
+                            Style="width:150px" aria-label="Link depth" />
+        }
+        <div class="row" style="gap:6px">
+            <RadzenSwitch Value="@showMissing" ValueChanged="@SetMissingAsync" InputAttributes="@(new Dictionary<string, object> { ["aria-label"] = "Show missing pages" })" />
+            <span class="sm t2">Missing pages</span>
+        </div>
+        <RadzenTextBox Placeholder="Find a node" Value="@find" @oninput="@(e => find = e.Value?.ToString() ?? "")" Style="width:180px" aria-label="Find a node" />
+        <span class="grow"></span>
+        @if (view.Nodes.Count > 0)
+        {
+            <span class="xs t3">@PageCount pages · @view.Edges.Count links@(view.Truncated ? $" · showing the {view.Nodes.Count(n => !n.Missing)} best-connected of {view.TotalPages}" : "")</span>
+        }
+        <RadzenButton Icon="fit_screen" Variant="Variant.Text" ButtonStyle="ButtonStyle.Base" Size="ButtonSize.Small" title="Fit to window" aria-label="Fit to window" Click="@FitAsync" />
+    </div>
+
+    <div class="kgb-gwrap">
+        @if (loading)
+        {
+            <div class="kgb-empty"><RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Small" />Laying out the graph…</div>
+        }
+        else if (view.Nodes.Count == 0)
+        {
+            <div class="kgb-empty"><span class="mi s40" aria-hidden="true">hub</span>No pages to show yet.</div>
+        }
+        else
+        {
+            var (minX, minY, width, height) = view.Bounds();
+            <svg @ref="svgRef" class="kgb-gsvg" viewBox="@F(minX) @F(minY) @F(width) @F(height)" role="img" aria-label="@AriaSummary">
+                <g class="kgb-gview">
+                    @foreach (var e in view.Edges)
+                    {
+                        if (!byId.TryGetValue(e.From, out var a) || !byId.TryGetValue(e.To, out var b)) continue;
+                        var (x1, y1, x2, y2) = Trim(a, b);
+                        <line class="@(e.ToMissing ? "kgb-gedge missing" : "kgb-gedge")" data-from="@a.Id" data-to="@b.Id"
+                              x1="@F(x1)" y1="@F(y1)" x2="@F(x2)" y2="@F(y2)" />
+                    }
+                    @foreach (var n in view.Nodes)
+                    {
+                        var css = "kgb-gnode " + (n.Missing ? "missing" : "g" + GroupIndex(n.Group))
+                                  + (IsCenter(n) ? " center" : "")
+                                  + (n.Id == selected ? " selected" : "")
+                                  + (Matches(n) ? " found" : find.Length > 0 ? " dim" : "")
+                                  + (ShowLabel(n) ? " labeled" : "");
+                        <g class="@css" data-id="@n.Id" transform="translate(@F(n.X) @F(n.Y))" tabindex="0" role="button"
+                           aria-label="@(n.Missing ? $"{n.Label} (no page yet)" : n.Label)" @onclick="@(() => Select(n))"
+                           @onkeydown="@(e => OnNodeKey(e, n))">
+                            <title>@(n.Missing ? $"{n.Label} — no page yet" : n.Path)</title>
+                            <circle r="@F(n.Radius)" />
+                            <text y="@F(n.Radius + 12)">@n.Label</text>
+                        </g>
+                    }
+                </g>
+            </svg>
+            @if (Selected is { } s)
+            {
+                <div class="kgb-gcard" role="dialog" aria-label="@s.Label">
+                    <div class="row">
+                        <span class="mi s16 @(s.Missing ? "tw" : "tp")" aria-hidden="true">@(s.Missing ? "link_off" : "description")</span>
+                        <b class="grow ell">@s.Label</b>
+                        <RadzenButton Icon="close" Variant="Variant.Text" ButtonStyle="ButtonStyle.Base" Size="ButtonSize.ExtraSmall" aria-label="Close" Click="@(() => selected = null)" />
+                    </div>
+                    @if (s.Missing)
+                    {
+                        <div class="xs t2">No page yet. @s.Degree @(s.Degree == 1 ? "page links" : "pages link") here.</div>
+                        <div class="row" style="margin-top:8px">
+                            <RadzenButton Text="Create page" Icon="note_add" Size="ButtonSize.Small" Click="@(() => Nav.NavigateTo(SafeMarkdown.CreateHref(s.Label)))" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mono xs t3 ell" title="@s.Path">@s.Path</div>
+                        <div class="xs t2">@s.Degree @(s.Degree == 1 ? "link" : "links") in this view</div>
+                        <div class="row" style="margin-top:8px">
+                            <RadzenButton Text="Open" Icon="edit_note" Size="ButtonSize.Small" Click="@(() => Nav.NavigateTo(SafeMarkdown.PageHref(s.Path!)))" />
+                            <RadzenButton Text="Show around" Icon="hub" Size="ButtonSize.Small" Variant="Variant.Outlined" ButtonStyle="ButtonStyle.Base"
+                                          Click="@(() => Nav.NavigateTo(Href(s.Path, Math.Max(1, lastDepth))))" />
+                        </div>
+                    }
+                </div>
+            }
+            <div class="kgb-glegend xs t3" aria-hidden="true">
+                @{ var folders = view.Nodes.Where(n => !n.Missing).Select(n => n.Group).Distinct(StringComparer.OrdinalIgnoreCase).ToList(); }
+                @foreach (var group in folders.Take(8))
+                {
+                    <span class="g@(GroupIndex(group))"><i class="kgb-gdot"></i>@(group.Length == 0 ? "Top level" : group)</span>
+                }
+                @if (folders.Count > 8)
+                {
+                    <span>+@(folders.Count - 8) more folders (colors repeat)</span>
+                }
+                @if (view.Nodes.Any(n => n.Missing))
+                {
+                    <span><i class="kgb-gdot missing"></i>No page yet</span>
+                }
+                <span>Scroll to zoom · drag to move</span>
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    [SupplyParameterFromQuery(Name = "p")] public string? P { get; set; }
+    [SupplyParameterFromQuery(Name = "d")] public int? D { get; set; }
+
+    sealed record DepthOption(string Text, int Value);
+    static readonly DepthOption[] depths = [new("1 link away", 1), new("2 links away", 2), new("3 links away", 3)];
+
+    GraphView view = GraphView.Empty;
+    Dictionary<string, GraphNode> byId = new();
+    readonly Dictionary<string, int> groups = new(StringComparer.OrdinalIgnoreCase);
+    bool local;
+    bool showMissing = true;
+    bool loading = true;
+    string find = "";
+    string? selected;
+    string? builtFor;
+    ElementReference svgRef;
+    bool bindPending;
+    CancellationTokenSource? rebuildDelay;
+
+    int Depth => Math.Clamp(D ?? 1, 0, 3);
+
+    // Missing nodes have no path, and P is null on the plain Graph page, so compare only real paths.
+    bool IsCenter(GraphNode n) => n.Path is not null && string.Equals(n.Path, P, StringComparison.OrdinalIgnoreCase);
+    int lastDepth = 1;
+    int PageCount => view.Nodes.Count(n => !n.Missing);
+    GraphNode? Selected => selected is not null && byId.TryGetValue(selected, out var n) ? n : null;
+    string AriaSummary => $"Graph of {PageCount} pages and {view.Edges.Count} links";
+
+    protected override void OnInitialized() => Workspace.Changed += OnWorkspaceChanged;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        local = P is not null && Depth > 0;
+        if (local) lastDepth = Depth;
+        var key = $"{P}|{Depth}|{showMissing}";
+        if (key == builtFor) return;
+        await BuildAsync();
+    }
+
+    async Task BuildAsync()
+    {
+        loading = view.Nodes.Count == 0;
+        await Graph.GetStatsAsync();
+        var options = new GraphViewOptions(local ? P : null, Depth, showMissing);
+        var snapshot = Graph.Snapshot;
+        // The layout is CPU-bound: off the UI thread where the host has threads (MAUI). WASM runs it inline, after
+        // letting the browser paint the "Laying out" state.
+        if (OperatingSystem.IsBrowser())
+        {
+            StateHasChanged();
+            await Task.Delay(30);
+            view = GraphViewBuilder.Build(snapshot, options);
+        }
+        else
+        {
+            view = await Task.Run(() => GraphViewBuilder.Build(snapshot, options));
+        }
+        byId = view.Nodes.ToDictionary(n => n.Id, StringComparer.OrdinalIgnoreCase);
+        if (selected is not null && !byId.ContainsKey(selected)) selected = null;
+        builtFor = $"{P}|{Depth}|{showMissing}";
+        loading = false;
+        bindPending = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!bindPending || view.Nodes.Count == 0) return;
+        bindPending = false;
+        try { await Browser.BindGraphAsync(svgRef); }
+        catch (JSException) { }
+    }
+
+    void OnWorkspaceChanged(KnowledgeChange change) => _ = InvokeAsync(async () =>
+    {
+        // Saves come in bursts (a rename rewrites several pages); rebuild once they settle.
+        rebuildDelay?.Cancel();
+        var cts = rebuildDelay = new CancellationTokenSource();
+        try { await Task.Delay(400, cts.Token); } catch (OperationCanceledException) { return; }
+        await BuildAsync();
+        StateHasChanged();
+    });
+
+    void SetScopeAsync(bool value)
+    {
+        if (value == local || P is null) return;
+        Nav.NavigateTo(Href(P, value ? Math.Max(1, lastDepth) : 0));
+    }
+
+    void SetDepthAsync(int value) => Nav.NavigateTo(Href(P, value));
+
+    async Task SetMissingAsync(bool value)
+    {
+        showMissing = value;
+        await BuildAsync();
+    }
+
+    /// <summary>d=0 is the whole graph. It keeps p in the URL so "Around page" can come back to the same page.</summary>
+    static string Href(string? path, int depth) =>
+        path is null ? "graph" : $"graph?p={Uri.EscapeDataString(path)}&d={depth}";
+
+    void Select(GraphNode n) => selected = selected == n.Id ? null : n.Id;
+
+    void OnNodeKey(KeyboardEventArgs e, GraphNode n)
+    {
+        if (e.Key is "Enter" or " ") Select(n);
+    }
+
+    async Task FitAsync()
+    {
+        try { await Browser.FitGraphAsync(svgRef); }
+        catch (JSException) { }
+    }
+
+    bool Matches(GraphNode n) =>
+        find.Length > 0 && (n.Label.Contains(find, StringComparison.OrdinalIgnoreCase) || (n.Path?.Contains(find, StringComparison.OrdinalIgnoreCase) ?? false));
+
+    /// <summary>Small graphs label every node; big ones label the hubs, the center, the selection and search matches.</summary>
+    bool ShowLabel(GraphNode n) =>
+        view.Nodes.Count <= 80 || n.Degree >= 6 || n.Id == selected || Matches(n) || IsCenter(n);
+
+    int GroupIndex(string group)
+    {
+        if (!groups.TryGetValue(group, out var i)) groups[group] = i = groups.Count % 8;
+        return i;
+    }
+
+    /// <summary>Starts and ends each line at the circles' edges.</summary>
+    static (double, double, double, double) Trim(GraphNode a, GraphNode b)
+    {
+        var dx = b.X - a.X;
+        var dy = b.Y - a.Y;
+        var len = Math.Sqrt(dx * dx + dy * dy);
+        if (len < 1e-6) return (a.X, a.Y, b.X, b.Y);
+        var ux = dx / len;
+        var uy = dy / len;
+        return (a.X + ux * a.Radius, a.Y + uy * a.Radius, b.X - ux * (b.Radius + 2), b.Y - uy * (b.Radius + 2));
+    }
+
+    static string F(double v) => v.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture);
+
+    public void Dispose()
+    {
+        Workspace.Changed -= OnWorkspaceChanged;
+        rebuildDelay?.Cancel();
+    }
+}

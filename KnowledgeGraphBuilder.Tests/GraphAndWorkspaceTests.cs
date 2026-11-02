@@ -179,7 +179,7 @@ public sealed class GraphAndWorkspaceTests : IDisposable
     }
 
     /// <summary>Only what the graph needs; pages live in memory like the WASM file system.</summary>
-    sealed class MemoryStore(Dictionary<string, string> pages) : IKnowledgeStore
+    internal sealed class MemoryStore(Dictionary<string, string> pages) : IKnowledgeStore
     {
         public event Action<KnowledgeChange>? ExternalChange { add { } remove { } }
         public Task<IReadOnlyList<string>> GetAllPagePathsAsync(CancellationToken ct = default) => Task.FromResult<IReadOnlyList<string>>(pages.Keys.ToList());

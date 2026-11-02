@@ -211,3 +211,42 @@ body { background: var(--rz-base-background-color, #f6f6f9); }
 .kgb-sk { background: linear-gradient(90deg, var(--sk) 0%, var(--sk2) 50%, var(--sk) 100%); background-size: 200% 100%; border-radius: 4px; height: 10px; animation: kgb-shimmer 1.4s infinite; }
 @keyframes kgb-shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
 @media (prefers-reduced-motion: reduce) { .kgb-sk, .kgb-caret, .kgb-typing i { animation: none; } }
+
+.kgb-lpg { display: inline-flex; align-items: center; gap: 4px; color: var(--pr); text-decoration: none; font-weight: 500; font-size: 11.5px; }
+.kgb-lpg:hover { text-decoration: underline; }
+
+/* graph page */
+.kgb-light { --g0: #4340d2; --g1: #0b7a6e; --g2: #b3541e; --g3: #8a3fb8; --g4: #2f6fb3; --g5: #a8326e; --g6: #5c7a12; --g7: #8a6a00; --gedge: #b9b9c8; --gedge-hl: #4340d2; }
+.kgb-dark { --g0: #aeacff; --g1: #5fd3c2; --g2: #ffaa7a; --g3: #d9a6ff; --g4: #8cc4ff; --g5: #ff9ccb; --g6: #b5dc6a; --g7: #f2cc66; --gedge: #4a4a5c; --gedge-hl: #aeacff; }
+.kgb-graph { flex: 1; min-height: 0; display: flex; flex-direction: column; background: var(--panel); }
+.kgb-gbar { flex: none; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 8px 12px; border-bottom: 1px solid var(--bd); }
+.kgb-gwrap { flex: 1; min-height: 0; position: relative; display: flex; background: var(--bg); }
+.kgb-gsvg { flex: 1; width: 100%; height: 100%; cursor: grab; touch-action: none; user-select: none; }
+.kgb-gsvg.panning { cursor: grabbing; }
+.kgb-gedge { stroke: var(--gedge); stroke-width: 1.2; }
+.kgb-gedge.missing { stroke-dasharray: 4 3; }
+.kgb-gnode { cursor: pointer; outline: none; }
+.kgb-gnode circle { fill: var(--gc, var(--g0)); stroke: var(--panel); stroke-width: 1.5; }
+.kgb-gnode text { font: 11px Roboto, sans-serif; fill: var(--tx2); text-anchor: middle; paint-order: stroke; stroke: var(--bg); stroke-width: 3px; stroke-linejoin: round; display: none; pointer-events: none; }
+.kgb-gnode.labeled text, .kgb-gnode:hover text, .kgb-gnode:focus-visible text, .kgb-gnode.hl text { display: block; }
+.kgb-gnode.g0 { --gc: var(--g0); } .kgb-gnode.g1 { --gc: var(--g1); } .kgb-gnode.g2 { --gc: var(--g2); } .kgb-gnode.g3 { --gc: var(--g3); }
+.kgb-gnode.g4 { --gc: var(--g4); } .kgb-gnode.g5 { --gc: var(--g5); } .kgb-gnode.g6 { --gc: var(--g6); } .kgb-gnode.g7 { --gc: var(--g7); }
+.kgb-gnode.missing circle { fill: var(--panel); stroke: var(--wab); stroke-width: 1.5; stroke-dasharray: 3 2; }
+.kgb-gnode.missing text { fill: var(--wa); font-style: italic; }
+.kgb-gnode.center circle { stroke: var(--tx); stroke-width: 2.5; }
+.kgb-gnode.center text { font-weight: 600; fill: var(--tx); }
+.kgb-gnode.selected circle, .kgb-gnode:focus-visible circle { stroke: var(--pr); stroke-width: 3; }
+.kgb-gnode.found circle { stroke: var(--hltx); stroke-width: 2.5; }
+.kgb-gnode.found text { fill: var(--tx); font-weight: 600; }
+.kgb-gnode.dim { opacity: .25; }
+.kgb-gsvg.hovering .kgb-gnode:not(.hl) { opacity: .25; }
+.kgb-gsvg.hovering .kgb-gedge:not(.hl) { opacity: .15; }
+.kgb-gedge.hl { stroke: var(--gedge-hl); stroke-width: 2; }
+.kgb-gcard { position: absolute; top: 12px; right: 12px; width: 260px; background: var(--panel); border: 1px solid var(--bd2); border-radius: 8px; box-shadow: var(--sh); padding: 10px 10px 10px 12px; display: flex; flex-direction: column; gap: 2px; }
+.kgb-glegend { position: absolute; left: 12px; bottom: 10px; display: flex; gap: 14px; align-items: center; background: color-mix(in srgb, var(--panel) 85%, transparent); padding: 4px 8px; border-radius: 6px; }
+.kgb-glegend span { display: inline-flex; align-items: center; gap: 5px; }
+.kgb-gdot { width: 10px; height: 10px; border-radius: 50%; background: var(--gc, var(--g0)); display: inline-block; }
+.kgb-glegend .g0 { --gc: var(--g0); } .kgb-glegend .g1 { --gc: var(--g1); } .kgb-glegend .g2 { --gc: var(--g2); } .kgb-glegend .g3 { --gc: var(--g3); }
+.kgb-glegend .g4 { --gc: var(--g4); } .kgb-glegend .g5 { --gc: var(--g5); } .kgb-glegend .g6 { --gc: var(--g6); } .kgb-glegend .g7 { --gc: var(--g7); }
+.kgb-gdot.missing { background: var(--panel); border: 1.5px dashed var(--wab); }
+@media (max-width: 899px) { .kgb-gcard { left: 12px; right: 12px; width: auto; } .kgb-glegend span:last-child { display: none; } }
