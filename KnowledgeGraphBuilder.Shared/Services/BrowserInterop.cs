@@ -23,7 +23,13 @@ public sealed class BrowserInterop(IJSRuntime js)
 
     public ValueTask ClearValueAsync(string id) => js.InvokeVoidAsync("kgb.clearValue", id);
 
-    public ValueTask BindGraphAsync(ElementReference svg) => js.InvokeVoidAsync("kgb.bindGraph", svg);
+    public ValueTask BindGraphAsync<T>(ElementReference svg, DotNetObjectReference<T> target) where T : class =>
+        js.InvokeVoidAsync("kgb.bindGraph", svg, target);
+
+    public ValueTask CenterGraphAsync(ElementReference svg, double x, double y) => js.InvokeVoidAsync("kgb.centerGraph", svg, x, y);
+
+    public ValueTask BindGraphPanelAsync<T>(ElementReference panel, DotNetObjectReference<T> target) where T : class =>
+        js.InvokeVoidAsync("kgb.bindGraphPanel", panel, target);
 
     public ValueTask FitGraphAsync(ElementReference svg) => js.InvokeVoidAsync("kgb.fitGraph", svg);
 

@@ -10,12 +10,20 @@ public sealed record GraphNode(string Id, string Label, string? Path, string Gro
 
 public sealed record GraphEdge(string From, string To, bool ToMissing);
 
-public sealed record GraphViewOptions(string? Center = null, int Depth = 1, bool IncludeMissing = true, int MaxNodes = 400);
+/// <param name="HiddenFolders">Top-level folders to leave out ("" is the top level). The center page is always kept.</param>
+public sealed record GraphViewOptions(string? Center = null, int Depth = 1, bool IncludeMissing = true, int MaxNodes = 400,
+    IReadOnlyCollection<string>? HiddenFolders = null);
+
+/// <summary>A top-level folder and how many of its pages the view could show, hidden or not.</summary>
+public sealed record GraphFolder(string Name, int Pages);
 
 /// <param name="Truncated">The whole graph had more pages than MaxNodes; only the best-connected ones are shown.</param>
 public sealed record GraphView(IReadOnlyList<GraphNode> Nodes, IReadOnlyList<GraphEdge> Edges, bool Truncated, int TotalPages)
 {
     public static readonly GraphView Empty = new([], [], false, 0);
+
+    /// <summary>Every folder in scope, including hidden ones, so the filter can bring them back.</summary>
+    public IReadOnlyList<GraphFolder> Folders { get; init; } = [];
 
     /// <summary>
     /// The area to show, at least <paramref name="minWidth"/> × <paramref name="minHeight"/> around the nodes' center, so a
@@ -71,8 +79,12 @@ public static class GraphViewBuilder
             }
         }
 
+        var hidden = new HashSet<string>(options.HiddenFolders ?? [], StringComparer.OrdinalIgnoreCase);
+        bool Visible(string path) => !hidden.Contains(TopFolder(path)) || string.Equals(path, center, StringComparison.OrdinalIgnoreCase);
+
         // Pick the pages to show.
         HashSet<string> pages;
+        List<string> inScope;
         var truncated = false;
         if (center is not null)
         {
@@ -86,13 +98,20 @@ public static class GraphViewBuilder
                         if (pages.Add(n)) next.Add(n);
                 frontier = next;
             }
+            inScope = [.. pages];
+            pages.RemoveWhere(p => !Visible(p));
         }
         else
         {
-            var all = snapshot.Pages.Keys.OrderByDescending(p => neighbors[p].Count).ThenBy(p => p, StringComparer.OrdinalIgnoreCase).ToList();
+            inScope = [.. snapshot.Pages.Keys];
+            var all = inScope.Where(Visible).OrderByDescending(p => neighbors[p].Count).ThenBy(p => p, StringComparer.OrdinalIgnoreCase).ToList();
             truncated = all.Count > options.MaxNodes;
             pages = new(all.Take(options.MaxNodes), StringComparer.OrdinalIgnoreCase);
         }
+        var folders = inScope.GroupBy(TopFolder, StringComparer.OrdinalIgnoreCase)
+            .Select(g => new GraphFolder(g.Key, g.Count()))
+            .OrderBy(f => f.Name.Length == 0 ? 0 : 1).ThenBy(f => f.Name, StringComparer.OrdinalIgnoreCase)
+            .ToList();
 
         // Edges: one per connected pair, in a stable order.
         var edges = new List<GraphEdge>();
@@ -138,7 +157,7 @@ public static class GraphViewBuilder
         foreach (var id in missingIds.OrderBy(i => i, StringComparer.Ordinal))
             nodes.Add(new GraphNode(id, missingLabel[id], null, "", true, degree.GetValueOrDefault(id)));
 
-        var view = new GraphView(nodes, edges, truncated, snapshot.Pages.Count);
+        var view = new GraphView(nodes, edges, truncated, snapshot.Pages.Count) { Folders = folders };
         ForceLayout.Run(view, center);
         return view;
     }
@@ -158,6 +177,35 @@ public static class GraphViewBuilder
     {
         var slash = path.IndexOf('/');
         return slash < 0 ? "" : path[..slash];
+    }
+}
+
+/// <summary>Finds nodes for the Graph page's search box.</summary>
+public static class GraphSearch
+{
+    /// <summary>
+    /// Nodes matching <paramref name="query"/>, best first: title starts with it, then title contains it, then the path
+    /// or an alias does, then the page text does. Ties go to the better-connected node.
+    /// </summary>
+    public static IReadOnlyList<GraphNode> Find(GraphView view, GraphSnapshot snapshot, string query)
+    {
+        var q = query.Trim();
+        if (q.Length == 0) return [];
+        var hits = new List<(GraphNode Node, int Rank)>();
+        foreach (var n in view.Nodes)
+        {
+            var page = n.Path is not null && snapshot.Pages.TryGetValue(n.Path, out var p) ? p.Parsed : null;
+            int rank;
+            if (n.Label.StartsWith(q, StringComparison.OrdinalIgnoreCase)) rank = 0;
+            else if (n.Label.Contains(q, StringComparison.OrdinalIgnoreCase)) rank = 1;
+            else if ((n.Path?.Contains(q, StringComparison.OrdinalIgnoreCase) ?? false)
+                     || (page?.FrontMatter.Aliases.Any(a => a.Contains(q, StringComparison.OrdinalIgnoreCase)) ?? false)) rank = 2;
+            else if (page?.PlainText.Contains(q, StringComparison.OrdinalIgnoreCase) ?? false) rank = 3;
+            else continue;
+            hits.Add((n, rank));
+        }
+        return hits.OrderBy(h => h.Rank).ThenByDescending(h => h.Node.Degree).ThenBy(h => h.Node.Label, StringComparer.OrdinalIgnoreCase)
+                   .Select(h => h.Node).ToList();
     }
 }
 

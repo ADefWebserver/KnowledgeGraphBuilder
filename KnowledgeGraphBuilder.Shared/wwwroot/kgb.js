@@ -132,24 +132,53 @@ window.kgb.bindTreeDrag = function (root, target) {
     });
 };
 
-// Graph page: wheel zoom around the pointer, drag to pan (both by changing the SVG viewBox), and hover highlighting of
-// a node's links and neighbors. Blazor re-renders the SVG's children, so state lives on the element, and a rebuilt
-// layout (new viewBox attribute from .NET) resets the view.
-window.kgb.bindGraph = function (svg) {
+// Graph page: wheel zoom around the pointer, drag the background to pan (both by changing the SVG viewBox), drag a
+// node to move it, and hover highlighting of a node's links and neighbors. Blazor re-renders the SVG's children, so
+// state lives on the element, and a rebuilt layout (a new data-home from .NET) resets the view. A moved node is
+// reported to .NET (OnNodeMoved) so the next render keeps it where it was dropped.
+window.kgb.bindGraph = function (svg, target) {
     if (!svg) return;
-    const home = svg.getAttribute('viewBox');
+    const home = svg.dataset.home || svg.getAttribute('viewBox');
     if (svg.kgbGraph) {
-        if (svg.kgbGraph.home !== home) { svg.kgbGraph.home = home; svg.kgbGraph.view = parse(home); }
+        svg.kgbGraph.target = target;
+        if (svg.kgbGraph.home !== home) { svg.kgbGraph.home = home; svg.kgbGraph.view = parse(home); svg.kgbGraph.apply(); }
         return;
     }
     function parse(v) { const p = v.split(/\s+/).map(Number); return { x: p[0], y: p[1], w: p[2], h: p[3] }; }
-    const state = svg.kgbGraph = { home: home, view: parse(home), drag: null, moved: false };
-    function apply() { const v = state.view; svg.setAttribute('viewBox', v.x + ' ' + v.y + ' ' + v.w + ' ' + v.h); }
+    const state = svg.kgbGraph = { home: home, view: parse(home), drag: null, node: null, moved: false, target: target };
+    // --gz is the zoom relative to the fitted view: labels divide their size by it so they stay readable, and
+    // zooming in far enough labels every node.
+    function apply() {
+        const v = state.view;
+        svg.setAttribute('viewBox', v.x + ' ' + v.y + ' ' + v.w + ' ' + v.h);
+        const z = parse(state.home).w / v.w;
+        svg.style.setProperty('--gz', z.toFixed(3));
+        svg.classList.toggle('zoomed', z >= 1.8);
+    }
+    state.apply = apply;
+    apply();
     function toGraph(e) {
         const r = svg.getBoundingClientRect(), v = state.view;
         // preserveAspectRatio "xMidYMid meet": one scale for both axes, centered.
         const s = Math.min(r.width / v.w, r.height / v.h);
         return { x: v.x + (e.clientX - r.left - (r.width - v.w * s) / 2) / s, y: v.y + (e.clientY - r.top - (r.height - v.h * s) / 2) / s, s: s };
+    }
+    function position(g) {
+        const m = /translate\(\s*([-\d.e]+)[ ,]+([-\d.e]+)/.exec(g.getAttribute('transform') || '');
+        return m ? { x: +m[1], y: +m[2] } : { x: 0, y: 0 };
+    }
+    function radius(g) { const c = g.querySelector('circle'); return c ? +c.getAttribute('r') : 0; }
+    function nodeById(id) {
+        for (const g of svg.querySelectorAll('.kgb-gnode')) if (g.dataset.id === id) return g;
+        return null;
+    }
+    // Same trimming as the .NET side: lines start and end at the circles' edges.
+    function placeLine(l, a, ra, b, rb) {
+        const dx = b.x - a.x, dy = b.y - a.y, len = Math.sqrt(dx * dx + dy * dy);
+        if (len < 1e-6) return;
+        const ux = dx / len, uy = dy / len;
+        l.setAttribute('x1', a.x + ux * ra); l.setAttribute('y1', a.y + uy * ra);
+        l.setAttribute('x2', b.x - ux * (rb + 2)); l.setAttribute('y2', b.y - uy * (rb + 2));
     }
 
     svg.addEventListener('wheel', function (e) {
@@ -164,10 +193,35 @@ window.kgb.bindGraph = function (svg) {
 
     svg.addEventListener('pointerdown', function (e) {
         if (e.button !== 0) return;
-        state.drag = { x: e.clientX, y: e.clientY, view: Object.assign({}, state.view), s: toGraph(e).s };
+        const p = toGraph(e);
         state.moved = false;
+        const g = e.target.closest('.kgb-gnode');
+        if (g) {
+            // Remember the node, its neighbors' positions and its lines, so a move only touches those elements.
+            const id = g.dataset.id, lines = [];
+            svg.querySelectorAll('.kgb-gedge').forEach(function (l) {
+                const other = l.dataset.from === id ? l.dataset.to : l.dataset.to === id ? l.dataset.from : null;
+                const og = other && nodeById(other);
+                if (og) lines.push({ l: l, from: l.dataset.from === id, at: position(og), r: radius(og) });
+            });
+            state.node = { g: g, id: id, start: p, origin: position(g), r: radius(g), lines: lines, at: position(g) };
+            return;
+        }
+        state.drag = { x: e.clientX, y: e.clientY, view: Object.assign({}, state.view), s: p.s };
     });
     window.addEventListener('pointermove', function (e) {
+        const n = state.node;
+        if (n) {
+            const p = toGraph(e);
+            if (!state.moved && Math.abs(p.x - n.start.x) + Math.abs(p.y - n.start.y) < 4 / p.s) return;
+            if (!state.moved) { state.moved = true; svg.classList.add('moving'); }
+            n.at = { x: n.origin.x + p.x - n.start.x, y: n.origin.y + p.y - n.start.y };
+            n.g.setAttribute('transform', 'translate(' + n.at.x.toFixed(1) + ' ' + n.at.y.toFixed(1) + ')');
+            n.lines.forEach(function (x) {
+                if (x.from) placeLine(x.l, n.at, n.r, x.at, x.r); else placeLine(x.l, x.at, x.r, n.at, n.r);
+            });
+            return;
+        }
         const d = state.drag;
         if (!d) return;
         const mx = e.clientX - d.x, my = e.clientY - d.y;
@@ -177,11 +231,18 @@ window.kgb.bindGraph = function (svg) {
         apply();
     });
     window.addEventListener('pointerup', function () {
+        const n = state.node;
+        if (n) {
+            state.node = null;
+            svg.classList.remove('moving');
+            if (state.moved && state.target) state.target.invokeMethodAsync('OnNodeMoved', n.id, n.at.x, n.at.y);
+            return;
+        }
         if (!state.drag) return;
         state.drag = null;
         svg.classList.remove('panning');
     });
-    // A pan ends with a click on whatever is under the pointer; don't let it select a node.
+    // A pan or a move ends with a click on whatever is under the pointer; don't let it select a node.
     svg.addEventListener('click', function (e) {
         if (state.moved) { e.stopPropagation(); e.preventDefault(); state.moved = false; }
     }, true);
@@ -197,17 +258,39 @@ window.kgb.bindGraph = function (svg) {
         svg.querySelectorAll('.kgb-gnode').forEach(function (g) { if (near.has(g.dataset.id)) g.classList.add('hl'); });
     }
     svg.addEventListener('pointerover', function (e) {
-        if (state.drag) return;
+        if (state.drag || state.node) return;
         const g = e.target.closest('.kgb-gnode');
         highlight(g ? g.dataset.id : null);
     });
-    svg.addEventListener('pointerleave', function () { highlight(null); });
+    svg.addEventListener('pointerleave', function () { if (!state.node) highlight(null); });
 };
 window.kgb.fitGraph = function (svg) {
     if (!svg || !svg.kgbGraph) return;
     const p = svg.kgbGraph.home.split(/\s+/).map(Number);
     svg.kgbGraph.view = { x: p[0], y: p[1], w: p[2], h: p[3] };
-    svg.setAttribute('viewBox', svg.kgbGraph.home);
+    svg.kgbGraph.apply();
+};
+// Moves the view so (x, y) is in the middle, zooming in to at least the fitted size.
+window.kgb.centerGraph = function (svg, x, y) {
+    if (!svg || !svg.kgbGraph) return;
+    const st = svg.kgbGraph, p = st.home.split(/\s+/).map(Number);
+    const w = Math.min(st.view.w, p[2]), h = st.view.h * (w / st.view.w);
+    st.view = { x: x - w / 2, y: y - h / 2, w: w, h: h };
+    st.apply();
+};
+// Graph page preview: page links open in the panel (OnPanelLink) instead of navigating away.
+window.kgb.bindGraphPanel = function (el, target) {
+    if (!el) return;
+    el.kgbTarget = target;
+    if (el.dataset.kgbBound) return;
+    el.dataset.kgbBound = '1';
+    el.addEventListener('click', function (e) {
+        const a = e.target.closest('a.wl, a.wu');
+        if (!a || e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return;
+        e.preventDefault();
+        e.stopPropagation();
+        el.kgbTarget.invokeMethodAsync('OnPanelLink', a.getAttribute('href'));
+    });
 };
 
 // Chat composer: Enter sends, Shift+Enter adds a new line, Esc stops a stream.

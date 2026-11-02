@@ -129,4 +129,48 @@ public class GraphViewTests
         Assert.InRange(width, 300, 20000);
         Assert.InRange(height, 300, 20000);
     }
+
+    [Fact]
+    public async Task HiddenFolders_DropTheirPages_ButStayListed()
+    {
+        var snapshot = await SnapshotAsync(Sample());
+        var view = GraphViewBuilder.Build(snapshot, new GraphViewOptions(HiddenFolders: ["docs"]));
+
+        Assert.Equal(["Lonely.md", "Welcome.md"], view.Nodes.Where(n => !n.Missing).Select(n => n.Path));
+        // Roadmap was only linked from a hidden page; Ideas is linked from Welcome.
+        Assert.Equal(["Ideas"], view.Nodes.Where(n => n.Missing).Select(n => n.Label));
+        Assert.DoesNotContain(view.Edges, e => e.From.StartsWith("Docs/") || e.To.StartsWith("Docs/"));
+        Assert.Equal([new GraphFolder("", 2), new GraphFolder("Docs", 2)], view.Folders);
+    }
+
+    [Fact]
+    public async Task HiddenFolders_KeepTheCenterPage()
+    {
+        var snapshot = await SnapshotAsync(Sample());
+        var view = GraphViewBuilder.Build(snapshot, new GraphViewOptions("Docs/Install.md", Depth: 1, IncludeMissing: false, HiddenFolders: ["Docs"]));
+
+        Assert.Equal(["Docs/Install.md", "Welcome.md"], view.Nodes.Select(n => n.Path));
+        Assert.Equal([new GraphFolder("", 1), new GraphFolder("Docs", 2)], view.Folders);
+    }
+
+    [Fact]
+    public async Task Search_RanksTitlesAbovePathsAboveText_ThenByLinks()
+    {
+        var snapshot = await SnapshotAsync(new()
+        {
+            ["Links.md"] = "# Links\n\nSee [[Hub]] and [[Page]].",
+            ["Notes/Blinking.md"] = "# Blinking\n\nSee [[Hub]].",
+            ["Hub.md"] = "# Hub\n\nSee [[Links]], [[Blinking]], [[Linkage]] and [[Other]].",
+            ["Linkage.md"] = "# Linkage\n\nSee [[Hub]] and [[Links]].",
+            ["Other.md"] = "# Other\n\nThe text mentions links once.",
+            ["Linker/Page.md"] = "# Page\n\nNothing here.",
+        });
+        var view = GraphViewBuilder.Build(snapshot, new GraphViewOptions());
+
+        var hits = GraphSearch.Find(view, snapshot, " link ").Select(n => n.Label).ToList();
+
+        // Title starts with "link" (more links first), title contains it, path contains it, text contains it.
+        Assert.Equal(["Links", "Linkage", "Blinking", "Page", "Hub", "Other"], hits);
+        Assert.Empty(GraphSearch.Find(view, snapshot, "   "));
+    }
 }

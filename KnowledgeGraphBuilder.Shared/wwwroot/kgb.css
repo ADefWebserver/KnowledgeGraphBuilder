@@ -222,13 +222,15 @@ body { background: var(--rz-base-background-color, #f6f6f9); }
 .kgb-gbar { flex: none; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 8px 12px; border-bottom: 1px solid var(--bd); }
 .kgb-gwrap { flex: 1; min-height: 0; position: relative; display: flex; background: var(--bg); }
 .kgb-gsvg { flex: 1; width: 100%; height: 100%; cursor: grab; touch-action: none; user-select: none; }
-.kgb-gsvg.panning { cursor: grabbing; }
+.kgb-gsvg.panning, .kgb-gsvg.moving { cursor: grabbing; }
+.kgb-gsvg.moving .kgb-gnode { cursor: grabbing; }
 .kgb-gedge { stroke: var(--gedge); stroke-width: 1.2; }
 .kgb-gedge.missing { stroke-dasharray: 4 3; }
 .kgb-gnode { cursor: pointer; outline: none; }
 .kgb-gnode circle { fill: var(--gc, var(--g0)); stroke: var(--panel); stroke-width: 1.5; }
-.kgb-gnode text { font: 11px Roboto, sans-serif; fill: var(--tx2); text-anchor: middle; paint-order: stroke; stroke: var(--bg); stroke-width: 3px; stroke-linejoin: round; display: none; pointer-events: none; }
-.kgb-gnode.labeled text, .kgb-gnode:hover text, .kgb-gnode:focus-visible text, .kgb-gnode.hl text { display: block; }
+/* --gz (set by kgb.js) is the zoom level: labels keep their on-screen size instead of growing with the graph. */
+.kgb-gnode text { font: calc(11px / var(--gz, 1)) Roboto, sans-serif; fill: var(--tx2); text-anchor: middle; dominant-baseline: hanging; paint-order: stroke; stroke: var(--bg); stroke-width: calc(3px / var(--gz, 1)); stroke-linejoin: round; display: none; pointer-events: none; }
+.kgb-gnode.labeled text, .kgb-gsvg.zoomed .kgb-gnode text, .kgb-gnode:hover text, .kgb-gnode:focus-visible text, .kgb-gnode.hl text { display: block; }
 .kgb-gnode.g0 { --gc: var(--g0); } .kgb-gnode.g1 { --gc: var(--g1); } .kgb-gnode.g2 { --gc: var(--g2); } .kgb-gnode.g3 { --gc: var(--g3); }
 .kgb-gnode.g4 { --gc: var(--g4); } .kgb-gnode.g5 { --gc: var(--g5); } .kgb-gnode.g6 { --gc: var(--g6); } .kgb-gnode.g7 { --gc: var(--g7); }
 .kgb-gnode.missing circle { fill: var(--panel); stroke: var(--wab); stroke-width: 1.5; stroke-dasharray: 3 2; }
@@ -242,11 +244,31 @@ body { background: var(--rz-base-background-color, #f6f6f9); }
 .kgb-gsvg.hovering .kgb-gnode:not(.hl) { opacity: .25; }
 .kgb-gsvg.hovering .kgb-gedge:not(.hl) { opacity: .15; }
 .kgb-gedge.hl { stroke: var(--gedge-hl); stroke-width: 2; }
-.kgb-gcard { position: absolute; top: 12px; right: 12px; width: 260px; background: var(--panel); border: 1px solid var(--bd2); border-radius: 8px; box-shadow: var(--sh); padding: 10px 10px 10px 12px; display: flex; flex-direction: column; gap: 2px; }
-.kgb-glegend { position: absolute; left: 12px; bottom: 10px; display: flex; gap: 14px; align-items: center; background: color-mix(in srgb, var(--panel) 85%, transparent); padding: 4px 8px; border-radius: 6px; }
-.kgb-glegend span { display: inline-flex; align-items: center; gap: 5px; }
-.kgb-gdot { width: 10px; height: 10px; border-radius: 50%; background: var(--gc, var(--g0)); display: inline-block; }
-.kgb-glegend .g0 { --gc: var(--g0); } .kgb-glegend .g1 { --gc: var(--g1); } .kgb-glegend .g2 { --gc: var(--g2); } .kgb-glegend .g3 { --gc: var(--g3); }
-.kgb-glegend .g4 { --gc: var(--g4); } .kgb-glegend .g5 { --gc: var(--g5); } .kgb-glegend .g6 { --gc: var(--g6); } .kgb-glegend .g7 { --gc: var(--g7); }
+.kgb-gpanel { position: absolute; top: 0; right: 0; bottom: 0; width: 340px; background: var(--panel); border-left: 1px solid var(--bd); box-shadow: var(--sh); padding: 10px 12px 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+.kgb-gph { font-size: 12px; font-weight: 600; color: var(--tx2); margin: 14px 0 4px; display: flex; gap: 6px; }
+.kgb-gconn { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.kgb-gconn button { all: unset; box-sizing: border-box; width: 100%; display: flex; align-items: center; gap: 8px; padding: 3px 6px; border-radius: 4px; font-size: 13px; color: var(--tx); cursor: pointer; }
+.kgb-gconn button:hover { background: var(--sur); }
+.kgb-gconn button:focus-visible { outline: 2px solid var(--pr); outline-offset: -2px; }
+.kgb-gconn button.missing { color: var(--wa); font-style: italic; }
+.kgb-gprev { min-height: 0; padding: 10px 12px; font-size: 13px; line-height: 20px; }
+.kgb-gprev h1 { font-size: 17px; line-height: 24px; }
+.kgb-gprev h2 { font-size: 14px; line-height: 20px; }
+.kgb-glegend { position: absolute; left: 12px; bottom: 10px; max-width: calc(100% - 24px); max-height: 40%; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; background: color-mix(in srgb, var(--panel) 85%, transparent); padding: 4px 8px; border-radius: 6px; }
+.kgb-gwrap.has-panel .kgb-glegend { max-width: calc(100% - 24px - 340px); }
+.kgb-glegend > span { display: inline-flex; align-items: center; gap: 5px; }
+.kgb-gchip { all: unset; display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px 1px 6px; border: 1px solid var(--bd); border-radius: 12px; background: var(--panel); color: var(--tx2); cursor: pointer; }
+.kgb-gchip:hover { border-color: var(--bd2); color: var(--tx); }
+.kgb-gchip:focus-visible { outline: 2px solid var(--pr); outline-offset: 1px; }
+.kgb-gchip.off { color: var(--tx3); text-decoration: line-through; }
+.kgb-gchip.off .kgb-gdot { background: transparent; box-shadow: inset 0 0 0 1.5px var(--gc, var(--g0)); }
+.kgb-gchip.all { color: var(--pr); }
+.kgb-gdot { width: 10px; height: 10px; border-radius: 50%; background: var(--gc, var(--g0)); display: inline-block; flex: none; }
+.kgb-glegend .g0, .kgb-gconn .g0 { --gc: var(--g0); } .kgb-glegend .g1, .kgb-gconn .g1 { --gc: var(--g1); } .kgb-glegend .g2, .kgb-gconn .g2 { --gc: var(--g2); } .kgb-glegend .g3, .kgb-gconn .g3 { --gc: var(--g3); }
+.kgb-glegend .g4, .kgb-gconn .g4 { --gc: var(--g4); } .kgb-glegend .g5, .kgb-gconn .g5 { --gc: var(--g5); } .kgb-glegend .g6, .kgb-gconn .g6 { --gc: var(--g6); } .kgb-glegend .g7, .kgb-gconn .g7 { --gc: var(--g7); }
 .kgb-gdot.missing { background: var(--panel); border: 1.5px dashed var(--wab); }
-@media (max-width: 899px) { .kgb-gcard { left: 12px; right: 12px; width: auto; } .kgb-glegend span:last-child { display: none; } }
+@media (max-width: 899px) {
+    .kgb-gpanel { top: auto; left: 0; width: auto; max-height: 55%; border-left: 0; border-top: 1px solid var(--bd); }
+    .kgb-gwrap.has-panel .kgb-glegend { display: none; }
+    .kgb-ghint { display: none !important; }
+}
