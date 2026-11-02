@@ -37,7 +37,8 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<WorkspaceState>();
         services.AddSingleton<KnowledgeGraphBuilder.Shared.Components.Chat.ChatTranscript>();
-        services.AddSingleton<BrowserInterop>();
+        // Scoped: in MAUI, IJSRuntime is scoped to the BlazorWebView, so a singleton would capture the root one and fail.
+        services.AddScoped<BrowserInterop>();
         return services;
     }
 }

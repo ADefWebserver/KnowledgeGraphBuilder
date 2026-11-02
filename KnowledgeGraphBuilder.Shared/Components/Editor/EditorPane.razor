@@ -101,7 +101,7 @@
             {
                 case ViewMode.Design:
                     <div class="kgb-md">
-                        <RadzenMarkdownEditor @key="@editorKey" Value="@body" ValueChanged="@OnBodyChanged" Immediate="true" Style="height:100%;min-height:360px" />
+                        <RadzenMarkdownEditor @key="@editorKey" Value="@editorValue" ValueChanged="@OnBodyChanged" Immediate="true" Style="height:100%;min-height:360px" />
                     </div>
                     break;
                 case ViewMode.Source:
@@ -147,6 +147,9 @@
     bool changedElsewhere;
     bool propsOpen = true;
     int editorKey;
+    // What the Markdown editor was created with. It changes only with editorKey: passing the live body back would differ
+    // from the editor's own value (we restore the final newline) and make it reset its content and caret.
+    string editorValue = "";
     DotNetObjectReference<EditorPane>? self;
 
     string Compose() => FrontMatter.Join(yaml, mode == ViewMode.Design ? EditorSanitizer.UnescapeWikiLinks(body) : body);
@@ -233,8 +236,14 @@
         original = page.Markdown;
         (yaml, body) = FrontMatter.Split(page.Markdown);
         ParseYaml();
-        editorKey++;
+        ResetEditor();
         changedElsewhere = false;
+    }
+
+    void ResetEditor()
+    {
+        editorValue = body;
+        editorKey++;
     }
 
     void ParseYaml()
@@ -260,9 +269,10 @@
     void OnBodyChanged(string value)
     {
         value ??= "";
-        // The Markdown editor drops the final newline; keep the file's ending as it was.
+        // The Markdown editor drops or adds final newlines; keep the file's ending as it was (one newline or none).
         var originalBody = FrontMatter.Split(original).Body;
-        if (originalBody.EndsWith('\n') && !value.EndsWith('\n')) value += "\n";
+        value = value.TrimEnd('\n');
+        if (originalBody.EndsWith('\n')) value += "\n";
         body = value;
         UpdateUnsaved();
     }
@@ -271,7 +281,7 @@
     {
         if (mode == ViewMode.Design) body = EditorSanitizer.UnescapeWikiLinks(body);
         mode = next;
-        editorKey++;
+        ResetEditor();
         await Task.CompletedTask;
     }
 
@@ -373,7 +383,7 @@
         if (loadedPath is null) return;
         (yaml, body) = FrontMatter.Split(original);
         ParseYaml();
-        editorKey++;
+        ResetEditor();
         UpdateUnsaved();
     }
 
@@ -384,6 +394,12 @@
         var path = await PageCommands.CreatePageAsync(Dialogs, Workspace, Notify, folder, name, Compose());
         if (path is null) return;
         State.SetUnsaved(loadedPath!, false);
+        // Saved back to the same path: the URL doesn't change, so nothing would reload the editor.
+        if (string.Equals(path, Path, StringComparison.OrdinalIgnoreCase))
+        {
+            await LoadAsync(path);
+            return;
+        }
         loadedPath = null;
         await OnNavigate.InvokeAsync(path);
     }

@@ -6,6 +6,7 @@
 @inject WorkspaceState State
 @inject IHostCapabilities Host
 @inject IServiceProvider Services
+@inject BrowserInterop Browser
 
 <section class="kgb-pane kgb-explorer" aria-label="Explorer">
     <div class="kgb-ph">
@@ -18,7 +19,7 @@
     <div class="kgb-search" @onkeydown="@OnSearchKeyDown">
         <RadzenTextBox Placeholder="Search pages" Value="@query" @oninput="@OnSearchInput" Style="width:100%" aria-label="Search pages" />
     </div>
-    <div class="kgb-scroll" @onkeydown="@OnTreeKeyDown">
+    <div class="kgb-scroll" @ref="scrollRef">
         @if (!string.IsNullOrWhiteSpace(query))
         {
             @if (searching && hits is null)
@@ -54,16 +55,14 @@
         }
         else
         {
-            <RadzenTree Value="@SelectedPath" Change="@OnChange" Expand="@OnExpand" Collapse="@OnCollapse" AriaLabel="Pages and folders" Style="width:100%">
+            <RadzenTree Value="@TreeValue" Change="@OnChange" Expand="@OnExpand" Collapse="@OnCollapse" AriaLabel="Pages and folders" Style="width:100%">
                 @RenderNodes("")
             </RadzenTree>
             @if (children.TryGetValue("", out var roots) && roots.Count == 0)
             {
                 <div class="kgb-empty sm">The knowledge root is empty.</div>
             }
-            <div class="kgb-root-drop @(dropTarget == "" ? "drop" : "")"
-                 @ondragover="@(() => OnDragOver(""))" @ondragover:preventDefault="true"
-                 @ondragleave="@(() => OnDragLeave(""))" @ondrop="@(() => OnDropAsync(""))" @ondrop:preventDefault="true">
+            <div class="kgb-root-drop @(dropTarget == "" ? "drop" : "")" data-kgb-path="" data-kgb-drop="true">
                 @if (dragSource is not null) { <span><span class="mi s14" aria-hidden="true">drive_file_move</span> Drop here to move to the root</span> }
             </div>
         }
@@ -72,7 +71,9 @@
 
 @code {
     [Parameter] public string? SelectedPath { get; set; }
-    [Parameter] public EventCallback<string> OnOpen { get; set; }
+    [Parameter] public int SelectionVersion { get; set; }
+    /// <summary>Opens a page, or closes the editor when the path is null.</summary>
+    [Parameter] public EventCallback<string?> OnOpen { get; set; }
 
     readonly Dictionary<string, List<KnowledgeNode>> children = new(StringComparer.OrdinalIgnoreCase);
     readonly Dictionary<string, KnowledgeNode> nodes = new(StringComparer.OrdinalIgnoreCase);
@@ -84,6 +85,16 @@
     string? dragSource;
     string? dropTarget;
     string? lastSelected;
+    ElementReference scrollRef;
+    DotNetObjectReference<ExplorerPane>? self;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        self = DotNetObjectReference.Create(this);
+        try { await Browser.BindTreeDragAsync(scrollRef, self); }
+        catch (JSException) { }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -152,6 +163,10 @@
 
     void OnStateChanged() => _ = InvokeAsync(StateHasChanged);
 
+    // RadzenTree compares Value by reference, so hand it the node's own path string. The highlight itself follows each
+    // item's Selected parameter, which is what moves it when a page is opened from a link instead of the tree.
+    string? TreeValue => SelectedPath is not null && nodes.TryGetValue(SelectedPath, out var n) ? n.Path : SelectedPath;
+
     string TargetFolder()
     {
         if (SelectedPath is null) return "";
@@ -173,7 +188,10 @@
             }
             else
             {
-                <RadzenTreeItem @key="@node.Path" Value="@node.Path" Text="@node.Name" HasChildren="false" Template="@NodeTemplate" />
+                var isOpen = string.Equals(node.Path, SelectedPath, StringComparison.OrdinalIgnoreCase);
+                @* A new SelectionVersion recreates the open page's item, which re-selects it in the tree. *@
+                <RadzenTreeItem @key="@(isOpen ? $"{node.Path}#{SelectionVersion}" : node.Path)" Value="@node.Path" Text="@node.Name" HasChildren="false"
+                                Template="@NodeTemplate" Selected="@isOpen" />
             }
         }
     };
@@ -183,10 +201,8 @@
         var path = item.Value as string ?? "";
         if (!nodes.TryGetValue(path, out var node)) return;
         var css = "kgb-node" + (dragSource == path ? " dragging" : "") + (dropTarget == path ? (CanDrop(path) ? " drop" : " nodrop") : "");
-        <span class="@css" draggable="true" title="@(dropTarget == path && !CanDrop(path) ? DropError(path) : node.Path)"
-              @ondragstart="@(() => dragSource = path)" @ondragend="@(() => { dragSource = null; dropTarget = null; })"
-              @ondragover="@(() => OnDragOver(path))" @ondragover:preventDefault="true" @ondragleave="@(() => OnDragLeave(path))"
-              @ondrop="@(() => OnDropAsync(path))" @ondrop:preventDefault="true" @ondrop:stopPropagation="true"
+        <span class="@css" data-kgb-path="@path" data-kgb-drop="@(node.IsFolder ? "true" : null)"
+              title="@(dropTarget == path && !CanDrop(path) ? DropError(path) : node.Path)"
               @oncontextmenu="@(e => OpenMenu(e, node))" @oncontextmenu:preventDefault="true" @oncontextmenu:stopPropagation="true">
             <span class="mi s16" aria-hidden="true">@(node.IsFolder ? (item.Expanded ? "folder_open" : "folder") : "description")</span>
             <span class="ell grow">@(node.IsFolder ? node.Name : KnowledgePath.StripExtension(node.Name))</span>
@@ -214,6 +230,8 @@
             }
             return;
         }
+        // Selecting the open page from code (the Selected parameter) raises Change too; it's already open.
+        if (string.Equals(path, SelectedPath, StringComparison.OrdinalIgnoreCase)) return;
         await OpenAsync(path);
     }
 
@@ -274,12 +292,14 @@
 
     // ------------------------------------------------------------ keyboard and menu
 
-    async Task OnTreeKeyDown(KeyboardEventArgs e)
+    // Called from kgb.bindTreeDrag for F2 and Delete.
+    [JSInvokable]
+    public Task OnTreeKey(string key) => InvokeAsync(async () =>
     {
         if (SelectedPath is null || !nodes.TryGetValue(SelectedPath, out var node)) return;
-        if (e.Key == "F2") await RenameAsync(node);
-        else if (e.Key == "Delete") await DeleteAsync(node);
-    }
+        if (key == "F2") await RenameAsync(node);
+        else if (key == "Delete") await DeleteAsync(node);
+    });
 
     void OpenMenu(MouseEventArgs e, KnowledgeNode node)
     {
@@ -415,23 +435,49 @@
             await Workspace.DeleteAsync(node.Path);
             State.SetUnsaved(node.Path, false);
             Notify.Notify(NotificationSeverity.Success, $"Deleted {node.Name}.", "", TimeSpan.FromSeconds(4));
+            // Close the editor if it showed the deleted page (or one inside the deleted folder). The "no longer exists"
+            // state is for pages removed outside the app.
+            if (SelectedPath is not null &&
+                (string.Equals(SelectedPath, node.Path, StringComparison.OrdinalIgnoreCase) || SelectedPath.StartsWith(node.Path + "/", StringComparison.OrdinalIgnoreCase)))
+                await OnOpen.InvokeAsync(null);
         }
         catch (KnowledgeException ex) { ShowError(ex); }
     }
 
     // ------------------------------------------------------------ drag and drop
 
-    void OnDragOver(string target)
+    // Called from kgb.bindTreeDrag. target is a folder path, "" for the root, or null when not over a drop target.
+
+    [JSInvokable]
+    public Task OnPointerDragStart(string path) => InvokeAsync(() =>
+    {
+        if (!nodes.ContainsKey(path)) return;
+        dragSource = path;
+        dropTarget = null;
+        StateHasChanged();
+    });
+
+    [JSInvokable]
+    public Task OnPointerDragOver(string? target) => InvokeAsync(() =>
     {
         if (dragSource is null) return;
-        if (target.Length > 0 && (!nodes.TryGetValue(target, out var n) || !n.IsFolder)) return;
-        dropTarget = target;
-    }
+        dropTarget = target is not null && (target.Length == 0 || (nodes.TryGetValue(target, out var n) && n.IsFolder)) ? target : null;
+        StateHasChanged();
+    });
 
-    void OnDragLeave(string target)
+    [JSInvokable]
+    public Task OnPointerDrop(string? target) => InvokeAsync(async () =>
     {
-        if (dropTarget == target) dropTarget = null;
-    }
+        if (target is null)
+        {
+            dragSource = null;
+            dropTarget = null;
+            StateHasChanged();
+            return;
+        }
+        await OnDropAsync(target);
+        StateHasChanged();
+    });
 
     bool CanDrop(string target) => DropError(target) is null;
 
@@ -469,5 +515,6 @@
         Workspace.Changed -= OnWorkspaceChanged;
         State.Changed -= OnStateChanged;
         searchCts?.Cancel();
+        self?.Dispose();
     }
 }

@@ -5,9 +5,10 @@
 @inject NavigationManager Nav
 
 <RadzenTheme Theme="material" />
-<RadzenComponents />
 
 <div class="kgb-app @(IsDark ? "kgb-dark" : "kgb-light")">
+    @* Inside the themed container so dialogs, menus and toasts get the kgb tokens. *@
+    <RadzenComponents />
     <header class="kgb-header">
         <a class="row" href="./" style="text-decoration:none;gap:10px">
             <span class="kgb-logo" aria-hidden="true"><span class="mi s16">hub</span></span>

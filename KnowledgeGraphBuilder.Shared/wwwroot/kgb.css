@@ -58,7 +58,8 @@ body { background: var(--rz-base-background-color, #f6f6f9); }
 .kgb-workspace .rz-splitter-pane { background: var(--panel); min-width: 0; }
 /* The editor pane takes the remaining width; the explorer and chat keep their sizes. */
 .kgb-workspace .rz-splitter > .rz-splitter-pane:not(:first-child):not(:last-child) { flex: 1 1 0 !important; min-width: 320px; }
-.kgb-workspace .rz-splitter > .rz-splitter-pane:first-child, .kgb-workspace .rz-splitter > .rz-splitter-pane:last-child { flex-shrink: 0; }
+/* Radzen gives the last pane flex-grow 1; only the editor should take the spare width. */
+.kgb-workspace .rz-splitter > .rz-splitter-pane:first-child, .kgb-workspace .rz-splitter > .rz-splitter-pane:last-child { flex-grow: 0 !important; flex-shrink: 0; }
 .kgb-pane { display: flex; flex-direction: column; min-width: 0; min-height: 0; height: 100%; background: var(--panel); }
 .kgb-ph { height: 38px; flex: none; display: flex; align-items: center; gap: 4px; padding: 0 6px 0 12px; border-bottom: 1px solid var(--bd); }
 .kgb-pt { font-weight: 500; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--tx2); }
@@ -140,6 +141,8 @@ body { background: var(--rz-base-background-color, #f6f6f9); }
 .kgb-mu { align-self: flex-end; max-width: 86%; background: var(--sur2); border-radius: 12px 12px 3px 12px; padding: 7px 11px; font-size: 13px; line-height: 19px; white-space: pre-wrap; word-break: break-word; }
 .kgb-ma { font-size: 13px; line-height: 20px; word-break: break-word; }
 .kgb-ma p { margin: 0 0 6px; }
+.kgb-ma h1, .kgb-ma h2, .kgb-ma h3, .kgb-ma h4 { font-weight: 600; margin: 10px 0 4px; }
+.kgb-ma h1 { font-size: 17px; line-height: 24px; } .kgb-ma h2 { font-size: 15px; line-height: 22px; } .kgb-ma h3, .kgb-ma h4 { font-size: 13.5px; line-height: 20px; }
 .kgb-ma ul, .kgb-ma ol { margin: 0 0 6px; padding-left: 20px; }
 .kgb-ma pre { background: var(--sur); padding: 8px; border-radius: 6px; overflow: auto; }
 .cite { display: inline-flex; align-items: center; gap: 3px; height: 20px; padding: 0 7px 0 5px; border-radius: 10px; background: var(--prs); color: var(--pr); border: 1px solid var(--prs2); font-weight: 500; font-size: 12px; line-height: 1; vertical-align: 0; text-decoration: none; white-space: nowrap; cursor: pointer; }

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 namespace KnowledgeGraphBuilder.Shared.Services;
@@ -21,4 +22,7 @@ public sealed class BrowserInterop(IJSRuntime js)
         js.InvokeVoidAsync("kgb.bindComposer", id, target);
 
     public ValueTask ClearValueAsync(string id) => js.InvokeVoidAsync("kgb.clearValue", id);
+
+    public ValueTask BindTreeDragAsync<T>(ElementReference root, DotNetObjectReference<T> target) where T : class =>
+        js.InvokeVoidAsync("kgb.bindTreeDrag", root, target);
 }

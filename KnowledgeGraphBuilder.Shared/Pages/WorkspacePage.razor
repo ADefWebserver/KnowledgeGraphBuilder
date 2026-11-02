@@ -15,7 +15,7 @@
 {
     <RadzenSplitter Orientation="Orientation.Horizontal" Style="flex:1;min-height:0">
         <RadzenSplitterPane Size="272px" Min="200px" Max="50%">
-            <ExplorerPane SelectedPath="@P" OnOpen="@OpenAsync" />
+            <ExplorerPane SelectedPath="@P" SelectionVersion="@selectionVersion" OnOpen="@OpenAsync" />
         </RadzenSplitterPane>
         <RadzenSplitterPane Min="320px">
             <EditorPane @ref="editor" Path="@P" OnCreatePage="@CreatePageAsync" OnNavigate="@OpenAsync" />
@@ -31,7 +31,7 @@ else
         <RadzenTabs RenderMode="TabRenderMode.Client" SelectedIndex="@State.ActiveTab" SelectedIndexChanged="@(i => State.SetActiveTab(i))" Style="height:100%">
             <Tabs>
                 <RadzenTabsItem Text="Explorer" Icon="folder">
-                    <ExplorerPane SelectedPath="@P" OnOpen="@OpenAsync" />
+                    <ExplorerPane SelectedPath="@P" SelectionVersion="@selectionVersion" OnOpen="@OpenAsync" />
                 </RadzenTabsItem>
                 <RadzenTabsItem Text="Editor" Icon="edit_note" Template="@EditorTab">
                     <EditorPane @ref="editor" Path="@P" OnCreatePage="@CreatePageAsync" OnNavigate="@OpenAsync" />
@@ -50,6 +50,7 @@ else
     [SupplyParameterFromQuery(Name = "p")] public string? P { get; set; }
 
     EditorPane? editor;
+    int selectionVersion;
     DotNetObjectReference<WorkspacePage>? self;
 
     RenderFragment<RadzenTabsItem> EditorTab => _ => __builder =>
@@ -132,15 +133,23 @@ else
         switch (await Dialogs.AskUnsavedAsync([P ?? ""]))
         {
             case UnsavedChoice.Save:
-                if (!await editor.SaveAsync()) context.PreventNavigation();
+                if (!await editor.SaveAsync()) StayOnPage(context);
                 break;
             case UnsavedChoice.Discard:
                 editor.Discard();
                 break;
             default:
-                context.PreventNavigation();
+                StayOnPage(context);
                 break;
         }
+    }
+
+    void StayOnPage(LocationChangingContext context)
+    {
+        context.PreventNavigation();
+        // The tree already highlighted the item that was clicked; have it select the open page again.
+        selectionVersion++;
+        StateHasChanged();
     }
 
     public void Dispose()
