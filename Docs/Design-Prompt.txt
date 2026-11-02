@@ -1,0 +1,105 @@
+Design the complete UI for Knowledge Graph Builder, a single-user desktop-style workbench for a knowledge graph made of Markdown files. The same UI runs in two places: a Windows desktop app (.NET MAUI Blazor Hybrid, in a WebView) and a browser app (Blazor WebAssembly on localhost). It is built with Radzen Blazor 12 components on the Radzen Material theme, so every screen must be buildable from Radzen components: RadzenLayout, RadzenSplitter, RadzenTree, RadzenMarkdownEditor, RadzenTabs, RadzenDialog, RadzenNotification, RadzenContextMenu, RadzenButton, RadzenTextBox, RadzenDropDown, RadzenBadge and RadzenAppearanceToggle. No Bootstrap. Provide light and dark versions of every screen.
+
+PRODUCT
+
+The user keeps notes as Markdown pages in nested folders under one folder called the knowledge root. Pages have YAML front-matter (title, tags, aliases, sources, updated) and link to each other with double-square-bracket wiki links, in four forms: a bare page name, a folder path to a page, a page name plus a heading, and a page name plus display text. The app derives a graph from those links: outgoing links, backlinks, and unresolved links (targets with no page yet). An AI chat answers questions from the graph with clickable page citations, and can create or update pages, but only after the user approves each change from a diff. The files on disk are the source of truth.
+
+AUDIENCE AND TONE
+
+A technical power user (developer, researcher, writer) who lives in this tool for hours. Dense, calm and keyboard-friendly, like an IDE or a note-taking app, not a marketing site. Material styling at compact density. Clear hierarchy, quiet chrome, strong focus states.
+
+SCREEN 1: APP SHELL
+
+A slim header with the app name and icon, the current knowledge root folder name, a Settings link, and the light/dark toggle. No left navigation menu; the workspace is the home page. The only pages are Workspace (home), Settings, and Not Found.
+
+SCREEN 2: WORKSPACE, DESKTOP (900 PX AND WIDER)
+
+A three-pane resizable splitter.
+
+Left, Explorer pane:
+- Toolbar with New page, New folder, Refresh, Collapse all, and a search box. Search is by keyword across titles, aliases, tags, paths and body. Results show title, path and a snippet of about 160 characters with the match highlighted.
+- A lazy-loading tree of folders and Markdown pages only, folders first, then alphabetical. Folder and page icons, a highlighted selected page, and expanded state that persists.
+- A right-click context menu per node: Open, New page here, New folder here, Rename, Move to, Delete. Show the menu open.
+- Drag a page or folder onto a folder to move it. Show the drag ghost, the drop-target highlight, and an invalid-drop state (moving a folder into itself).
+- A dot on any page with unsaved edits.
+
+Center, Editor pane:
+- Header with the page title (from front-matter or the file name), a breadcrumb path, an unsaved-changes dot, Save (Ctrl+S), Revert, and a Design / Source mode switch for the Markdown editor.
+- A collapsible Properties box above the editor holding the raw YAML front-matter as monospace text, with an Invalid YAML warning badge state (saving is still allowed).
+- The Markdown editor body. Wiki links render as styled links. Unresolved links have a distinct style, such as a dashed underline in a warning color plus an icon.
+- A Preview toggle or tab that renders the page with clickable wiki links.
+- A Links panel (below the editor or as a side tab) with three groups and counts: Outgoing; Backlinks, each showing the source page and line; and Unresolved, each with a Create page action.
+- An empty state when no page is selected: "Select a page or create one", with shortcuts.
+
+Right, Chat pane:
+- Header with "Chat", a provider and model chip (for example "Anthropic, claude-sonnet-5-5"), and a New chat button.
+- A message list of user messages and assistant messages rendered as Markdown, with citation chips that open the cited page. No images. External links appear as inert text with the URL visible.
+- Small, muted tool activity rows between messages, for example "search_pages: query=install" and "read_page: Getting Started/Install".
+- A streaming state: text appearing word by word, a typing indicator, and a Stop button replacing Send.
+- A composer with a multiline input. Enter sends, Shift+Enter adds a new line.
+
+SCREEN 3: APPROVAL CARDS (THE KEY INTERACTION, DESIGN CAREFULLY)
+
+When the AI wants to write, the stream pauses and one approval card per proposed change appears in the chat.
+- Each card shows the action (Create page, Update page or Create folder), the target path, and a diff view: an inline unified diff with highlighted added and removed lines, line numbers, collapsible unchanged regions, and an expand-to-full-screen option. A new page shows its full content as all added.
+- Each card has Apply and Reject buttons. When there are several cards, a sticky bar offers Apply all and Reject all with progress such as "2 of 3 decided".
+- Card states: Pending; Approved (waiting for the others); Applied; Rejected; Not applied because the page changed (conflict); Cancelled (the user pressed Stop); Superseded (the user typed a new message instead of deciding).
+- After apply, the new or updated page appears in the tree, and a "Pages changed" note in the chat links to it.
+
+SCREEN 4: WORKSPACE, NARROW (UNDER 900 PX)
+
+The splitter becomes three tabs: Explorer, Editor and Chat. The Chat tab shows a badge when an approval is pending, and the Editor tab shows a dot when there are unsaved edits. Design it at about 400 px wide.
+
+SCREEN 5: DIALOGS
+
+- New page, New folder and Rename: a name dialog with inline validation errors (invalid characters, reserved names such as CON or NUL, name already exists, too long).
+- Move to: a dialog with a folder-only tree picker.
+- Delete confirmation that counts what will be removed, for example "3 pages, 1 folder, and 4 other files (hidden or non-Markdown) will be moved to the Recycle Bin". Also a stronger variant for when the Recycle Bin is unavailable and the delete is permanent.
+- Conflict dialog on save when the file changed on disk: "This page was changed outside the app", with Overwrite, Reload and Cancel.
+- Unsaved changes prompt when navigating away or closing the window: Save, Discard, Cancel.
+- Rename or move with link updates: an in-progress state and a result such as "Renamed. 4 pages updated.", plus a warning variant listing pages that failed to update.
+- Page no longer exists: an editor state with a Save as new page action.
+
+SCREEN 6: SETTINGS
+
+Sections in cards:
+- Knowledge root: a folder path text box with validation (refuses drive roots such as C:\, warns above 10,000 pages) and an Apply button. In the browser host this is read-only, shows only the folder name, and notes that it is configured on the server.
+- AI provider: a provider dropdown (Anthropic, OpenAI, Azure OpenAI, Ollama), model, endpoint (shown only for Azure OpenAI and Ollama), and an API key field showing "Configured" or "Not set" with a Replace button. The key itself is never displayed. Add a privacy note: "Page text the assistant reads is sent to the selected provider. Ollama keeps everything local." In the browser host this whole section is read-only.
+- Graph: stats (pages, links, unresolved links) and a Rebuild graph button with progress and a result.
+- Appearance: the theme toggle.
+
+SCREEN 7: NOTIFICATIONS AND SYSTEM STATES
+
+- Toasts for Saved, Renamed with N pages updated, Deleted, errors with a Retry button (file locked), Page too large (over 1 MB), Request blocked, and Conversation expired (chat was reset).
+- Chat errors shown inline in the transcript, with a Retry button when the error is retryable.
+- Chat with no API key: an inline card "Configure an API key in Settings" with a link to Settings.
+- A first-run state showing the seeded Welcome page.
+- Loading skeletons for the tree, the editor and the chat.
+
+SAMPLE CONTENT FOR THE MOCKUPS
+
+Tree:
+- Welcome.md (title Welcome, tag start)
+- Getting Started folder: Install.md; Linking Pages.md (contains a link to Roadmap, which is unresolved on purpose); Using Chat.md (alias Chat)
+- Projects folder, then Alpha folder: Overview.md (title Alpha Project, tag project)
+
+Example front-matter for Overview.md: title is Alpha Project, tags is a list containing project.
+
+Example chat:
+- User: "How do I install it?"
+- Tool rows: search_pages with query install, then read_page on Getting Started/Install.
+- Assistant: "Two pages cover installation. Start with Getting Started/Install, and see Welcome for an overview. I can add an FAQ page if you like." Both page names appear as citation chips.
+- User: "Yes, add an FAQ page and a Roadmap page."
+- Two approval cards: Create page Getting Started/FAQ.md, and Create page Roadmap.md.
+
+DELIVERABLES
+
+1. A small design system sheet: color tokens for light and dark built on Radzen Material; typography, with a UI font plus a monospace font for YAML, paths and diffs; spacing at compact density; and styles for wiki links, unresolved links, citation chips, tool rows, diff added and removed lines, the unsaved dot, and status badges.
+2. High-fidelity mockups, light and dark, of: the desktop Workspace with a page open and the chat mid-conversation; the Workspace with two pending approval cards; the narrow tabbed layout; the Settings page in the desktop host and in the read-only browser variant; each dialog in screen 5; and the empty and error states in screen 7.
+3. A short annotated note per screen naming the Radzen component used for each region, the keyboard shortcuts (Ctrl+S saves, Enter sends, Esc closes a dialog, F2 renames, Delete deletes in the tree), and the focus order.
+
+CONSTRAINTS
+
+- Everything must be achievable with Radzen Blazor components plus light custom CSS. No custom canvas or graph visualization; a visual graph view is out of scope for this version.
+- Accessible: WCAG AA contrast in both themes, visible focus rings, and no meaning carried by color alone. Unresolved links and diff lines also need an icon, prefix or pattern.
+- No login, no multi-user UI, no avatars for other people, no chat history list (chat lives only for the session), and no image or attachment management.

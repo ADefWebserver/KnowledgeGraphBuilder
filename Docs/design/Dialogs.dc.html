@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Name and Move dialogs</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./kgb.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&amp;display=block">
+<style>
+body{margin:0}
+a{color:#4340d2}a:hover{color:#2f2ca6}
+</style>
+</helmet>
+<div class="board" style="width:3080px;height:960px">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div>
+<p class="tl">{{t.name}}</p>
+<div class="sheet scrim {{t.cls}}" style="width:1460px;height:848px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px 24px;align-content:start">
+
+<div class="cell"><span class="clabel">New page · valid</span>
+<div class="dlg" role="dialog" aria-labelledby="d1">
+<div class="dlgh"><span id="d1">New page</span><span class="grow"></span><button class="btn i" aria-label="Close (Esc)"><span class="mi" aria-hidden="true">close</span></button></div>
+<div class="dlgb">
+<div><label class="lbl" for="n1">Name</label><input id="n1" class="in fr" value="Troubleshooting" aria-describedby="n1h"><div class="help" id="n1h"><span class="mi s14" aria-hidden="true">description</span><span class="mono" style="font-size:11.5px">Getting Started/Troubleshooting.md</span></div></div>
+<div class="row sm t2"><span class="mi s16" aria-hidden="true">folder</span>In <b>Getting Started</b></div>
+</div>
+<div class="dlgf"><button class="btn o">Cancel</button><button class="btn p">Create page</button></div>
+</div></div>
+
+<div class="cell"><span class="clabel">New page · invalid characters</span>
+<div class="dlg" role="dialog" aria-labelledby="d2">
+<div class="dlgh"><span id="d2">New page</span><span class="grow"></span><button class="btn i" aria-label="Close (Esc)"><span class="mi" aria-hidden="true">close</span></button></div>
+<div class="dlgb">
+<div><label class="lbl" for="n2">Name</label><input id="n2" class="in inv" value="Setup: step 1?" aria-invalid="true" aria-describedby="n2e"><div class="err" id="n2e"><span class="mi s16" aria-hidden="true">error</span><span>Remove <span class="mono">:</span> and <span class="mono">?</span>. Names can't contain <span class="mono">\ / : * ? &quot; &lt; &gt; |</span></span></div></div>
+<div class="row sm t2"><span class="mi s16" aria-hidden="true">folder</span>In <b>Getting Started</b></div>
+</div>
+<div class="dlgf"><button class="btn o">Cancel</button><button class="btn p" disabled>Create page</button></div>
+</div></div>
+
+<div class="cell"><span class="clabel">New folder · reserved name</span>
+<div class="dlg" role="dialog" aria-labelledby="d3">
+<div class="dlgh"><span id="d3">New folder</span><span class="grow"></span><button class="btn i" aria-label="Close (Esc)"><span class="mi" aria-hidden="true">close</span></button></div>
+<div class="dlgb">
+<div><label class="lbl" for="n3">Name</label><input id="n3" class="in inv" value="CON" aria-invalid="true" aria-describedby="n3e"><div class="err" id="n3e"><span class="mi s16" aria-hidden="true">error</span><span>CON is reserved by Windows. Choose another name. (Also reserved: PRN, AUX, NUL, COM1–9, LPT1–9.)</span></div></div>
+<div class="row sm t2"><span class="mi s16" aria-hidden="true">folder</span>In <b>Projects</b></div>
+</div>
+<div class="dlgf"><button class="btn o">Cancel</button><button class="btn p" disabled>Create folder</button></div>
+</div></div>
+
+<div class="cell"><span class="clabel">Rename (F2) · name already exists</span>
+<div class="dlg" role="dialog" aria-labelledby="d4">
+<div class="dlgh"><span id="d4">Rename page</span><span class="grow"></span><button class="btn i" aria-label="Close (Esc)"><span class="mi" aria-hidden="true">close</span></button></div>
+<div class="dlgb">
+<div><label class="lbl" for="n4">Name</label><input id="n4" class="in inv" value="install" aria-invalid="true" aria-describedby="n4e"><div class="err" id="n4e"><span class="mi s16" aria-hidden="true">error</span><span>A page named Install already exists in Getting Started. Names are not case-sensitive.</span></div></div>
+<div class="row sm t2"><span class="mi s16" aria-hidden="true">link</span>Links to this page will be updated.</div>
+</div>
+<div class="dlgf"><button class="btn o">Cancel</button><button class="btn p" disabled>Rename</button></div>
+</div></div>
+
+<div class="cell"><span class="clabel">Rename · too long</span>
+<div class="dlg" role="dialog" aria-labelledby="d5">
+<div class="dlgh"><span id="d5">Rename page</span><span class="grow"></span><button class="btn i" aria-label="Close (Esc)"><span class="mi" aria-hidden="true">close</span></button></div>
+<div class="dlgb">
+<div><label class="lbl" for="n5">Name</label><input id="n5" class="in inv" value="How to link pages across folders when the page names contain…" aria-invalid="true" aria-describedby="n5e"><div class="row" style="justify-content:space-between"><div class="err" id="n5e"><span class="mi s16" aria-hidden="true">error</span><span>Too long. Shorten it so the full path fits Windows limits.</span></div><span class="xs td mono" style="margin-top:5px">[N]/[MAX]</span></div></div>
+<div class="row sm t2"><span class="mi s16" aria-hidden="true">link</span>Links to this page will be updated.</div>
+</div>
+<div class="dlgf"><button class="btn o">Cancel</button><button class="btn p" disabled>Rename</button></div>
+</div></div>
+
+<div class="cell"><span class="clabel">Move to · folder picker</span>
+<div class="dlg" role="dialog" aria-labelledby="d6">
+<div class="dlgh"><span id="d6">Move “Linking Pages” to…</span><span class="grow"></span><button class="btn i" aria-label="Close (Esc)"><span class="mi" aria-hidden="true">close</span></button></div>
+<div class="dlgb" style="gap:10px">
+<div class="picker" role="tree" aria-label="Folders">
+<div class="tr" style="--d:0"><span class="mi chev" aria-hidden="true">expand_more</span><span class="mi" aria-hidden="true">home_storage</span><span class="ell grow">my-notes</span><span class="xs t3">root</span></div>
+<div class="tr" style="--d:1" aria-disabled="true"><span class="sp"></span><span class="mi" aria-hidden="true">folder</span><span class="ell grow t3">Getting Started</span><span class="bdg b-ne" style="height:18px">Current</span></div>
+<div class="tr" style="--d:1"><span class="mi chev" aria-hidden="true">expand_more</span><span class="mi" aria-hidden="true">folder_open</span><span class="ell grow">Projects</span></div>
+<div class="tr sel fr" style="--d:2;outline-offset:-2px" aria-selected="true"><span class="sp"></span><span class="mi" aria-hidden="true">folder</span><span class="ell grow">Alpha</span><span class="mi s16" aria-hidden="true">check</span></div>
+</div>
+<div class="help" style="margin:0"><span class="mi s14" aria-hidden="true">arrow_forward</span><span class="mono" style="font-size:11.5px">Projects/Alpha/Linking Pages.md</span></div>
+<div class="row sm t2"><span class="mi s16" aria-hidden="true">link</span>2 pages link here and will be updated.</div>
+</div>
+<div class="dlgf"><button class="btn tx" style="margin-right:auto"><span class="mi s16" aria-hidden="true">create_new_folder</span>New folder</button><button class="btn o">Cancel</button><button class="btn p">Move</button></div>
+</div></div>
+
+</div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":3080,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { themes: [{ cls: 'light', name: 'Light' }, { cls: 'dark', name: 'Dark' }] };
+  }
+}
+</script>
+</body>
+</html>

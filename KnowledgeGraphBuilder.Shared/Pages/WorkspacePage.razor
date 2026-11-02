@@ -1,0 +1,151 @@
+@page "/"
+@implements IDisposable
+@inject NavigationManager Nav
+@inject WorkspaceState State
+@inject BrowserInterop Browser
+@inject DialogService Dialogs
+@inject NotificationService Notify
+@inject IKnowledgeWorkspace Workspace
+
+<PageTitle>@(P is null ? "Knowledge Graph Builder" : KnowledgePath.StripExtension(P) + " · Knowledge Graph Builder")</PageTitle>
+
+<NavigationLock OnBeforeInternalNavigation="@OnBeforeNavigationAsync" ConfirmExternalNavigation="@State.HasUnsaved" />
+
+@if (State.IsWide)
+{
+    <RadzenSplitter Orientation="Orientation.Horizontal" Style="flex:1;min-height:0">
+        <RadzenSplitterPane Size="272px" Min="200px" Max="50%">
+            <ExplorerPane SelectedPath="@P" OnOpen="@OpenAsync" />
+        </RadzenSplitterPane>
+        <RadzenSplitterPane Min="320px">
+            <EditorPane @ref="editor" Path="@P" OnCreatePage="@CreatePageAsync" OnNavigate="@OpenAsync" />
+        </RadzenSplitterPane>
+        <RadzenSplitterPane Size="420px" Min="320px" Max="60%">
+            <ChatPane />
+        </RadzenSplitterPane>
+    </RadzenSplitter>
+}
+else
+{
+    <div class="kgb-tabs">
+        <RadzenTabs RenderMode="TabRenderMode.Client" SelectedIndex="@State.ActiveTab" SelectedIndexChanged="@(i => State.SetActiveTab(i))" Style="height:100%">
+            <Tabs>
+                <RadzenTabsItem Text="Explorer" Icon="folder">
+                    <ExplorerPane SelectedPath="@P" OnOpen="@OpenAsync" />
+                </RadzenTabsItem>
+                <RadzenTabsItem Text="Editor" Icon="edit_note" Template="@EditorTab">
+                    <EditorPane @ref="editor" Path="@P" OnCreatePage="@CreatePageAsync" OnNavigate="@OpenAsync" />
+                </RadzenTabsItem>
+                <RadzenTabsItem Text="Chat" Icon="forum" Template="@ChatTab">
+                    <ChatPane />
+                </RadzenTabsItem>
+            </Tabs>
+        </RadzenTabs>
+    </div>
+}
+
+@code {
+    public const int Breakpoint = 900;
+
+    [SupplyParameterFromQuery(Name = "p")] public string? P { get; set; }
+
+    EditorPane? editor;
+    DotNetObjectReference<WorkspacePage>? self;
+
+    RenderFragment<RadzenTabsItem> EditorTab => _ => __builder =>
+    {
+        <span class="mi s16" aria-hidden="true">edit_note</span><span>&nbsp;Editor</span>
+        @if (State.HasUnsaved) { <span class="dot" style="margin-left:6px" title="Unsaved changes"></span><span class="sr-only">unsaved</span> }
+    };
+
+    RenderFragment<RadzenTabsItem> ChatTab => _ => __builder =>
+    {
+        <span class="mi s16" aria-hidden="true">forum</span><span>&nbsp;Chat</span>
+        @if (State.PendingApprovals > 0) { <span class="nb" style="margin-left:6px" title="Changes waiting for approval">@State.PendingApprovals</span> }
+    };
+
+    protected override void OnInitialized() => State.Changed += OnStateChanged;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        self = DotNetObjectReference.Create(this);
+        try { State.SetWide(await Browser.WatchWidthAsync(self, Breakpoint)); }
+        catch (JSException) { }
+    }
+
+    [JSInvokable]
+    public void OnWidthChanged(bool wide) => InvokeAsync(() => State.SetWide(wide));
+
+    void OnStateChanged() => InvokeAsync(StateHasChanged);
+
+    protected override void OnParametersSet()
+    {
+        if (P is not null && KnowledgePath.TryParse(P, isPage: true, out var page, out _)) P = page.Value;
+        else P = null;
+    }
+
+    async Task OpenAsync(string? path)
+    {
+        Nav.NavigateTo(path is null ? "./" : SafeMarkdown.PageHref(path));
+        if (path is not null) State.SetActiveTab(1);
+        await Task.CompletedTask;
+    }
+
+    async Task CreatePageAsync(string target)
+    {
+        // From an unresolved link: create it next to the current page so the link resolves.
+        var folder = P is null ? "" : LinkResolver.FolderOf(P);
+        var name = target;
+        if (target.Contains('/'))
+        {
+            folder = LinkResolver.FolderOf(target);
+            name = target[(target.LastIndexOf('/') + 1)..];
+            if (folder.Length > 0 && !await Workspace.ExistsAsync(folder))
+            {
+                try { await Workspace.CreateFolderAsync(folder); }
+                catch (KnowledgeException ex) { PageCommands.ShowError(Notify, ex); return; }
+            }
+        }
+        var path = await PageCommands.CreatePageAsync(Dialogs, Workspace, Notify, folder, name.Length == 0 ? null : name);
+        if (path is not null) await OpenAsync(path);
+    }
+
+    async Task OnBeforeNavigationAsync(LocationChangingContext context)
+    {
+        var uri = Nav.ToAbsoluteUri(context.TargetLocation);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        var targetIsWorkspace = Nav.ToBaseRelativePath(uri.GetLeftPart(UriPartial.Path)).Length == 0;
+
+        if (targetIsWorkspace && query["create"] is { } create)
+        {
+            context.PreventNavigation();
+            await CreatePageAsync(create);
+            return;
+        }
+
+        var targetP = query["p"] ?? "";
+        if (KnowledgePath.TryParse(targetP, isPage: true, out var parsed, out _)) targetP = parsed.Value;
+        var samePage = targetIsWorkspace && string.Equals(targetP, P ?? "", StringComparison.OrdinalIgnoreCase);
+        if (samePage || editor is null || !editor.IsDirty) return;
+
+        switch (await Dialogs.AskUnsavedAsync([P ?? ""]))
+        {
+            case UnsavedChoice.Save:
+                if (!await editor.SaveAsync()) context.PreventNavigation();
+                break;
+            case UnsavedChoice.Discard:
+                editor.Discard();
+                break;
+            default:
+                context.PreventNavigation();
+                break;
+        }
+    }
+
+    public void Dispose()
+    {
+        State.Changed -= OnStateChanged;
+        self?.Dispose();
+    }
+}

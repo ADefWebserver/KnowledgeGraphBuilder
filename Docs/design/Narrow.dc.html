@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Narrow layout</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./kgb.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&amp;display=block">
+<style>
+body{margin:0}
+a{color:#4340d2}a:hover{color:#2f2ca6}
+</style>
+</helmet>
+<div class="board" style="width:2752px;height:1020px">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div>
+<p class="tl">{{t.name}}</p>
+<div class="sheet {{t.cls}}" style="width:1296px;height:908px;display:flex;gap:24px;background:var(--sur)">
+
+<div class="col" style="gap:10px">
+<p class="cap" style="margin:0">Explorer tab</p>
+<div class="kgb" style="width:400px;height:820px">
+<header class="hdr"><span class="logo"><span class="mi s16" aria-hidden="true">hub</span></span><span class="rootchip"><span class="mi s14" aria-hidden="true">folder_open</span>my-notes</span><span class="grow"></span><a class="btn i" href="#settings" aria-label="Settings"><span class="mi" aria-hidden="true">settings</span></a><button class="btn i" aria-label="{{t.tl}}"><span class="mi" aria-hidden="true">{{t.ti}}</span></button></header>
+<div class="tabs" role="tablist">
+<button class="tab on" role="tab" aria-selected="true"><span class="mi s16" aria-hidden="true">folder</span>Explorer</button>
+<button class="tab" role="tab"><span class="mi s16" aria-hidden="true">edit_document</span>Editor<span class="dot" role="img" aria-label="unsaved changes"></span></button>
+<button class="tab" role="tab"><span class="mi s16" aria-hidden="true">forum</span>Chat<span class="nb" aria-label="2 approvals pending">2</span></button>
+</div>
+<div class="pane grow">
+<div class="row" style="padding:8px;gap:6px"><div class="search grow"><span class="mi s16" aria-hidden="true">search</span><input class="in" style="height:36px" placeholder="Search pages" aria-label="Search pages"></div><button class="btn o i" style="width:36px;height:36px" aria-label="New page"><span class="mi" aria-hidden="true">note_add</span></button><button class="btn o i" style="width:36px;height:36px" aria-label="More actions"><span class="mi" aria-hidden="true">more_vert</span></button></div>
+<div class="tree">
+<div class="tr" style="--d:0;height:36px"><span class="mi chev" aria-hidden="true">expand_more</span><span class="mi" aria-hidden="true">folder_open</span><span class="ell">Getting Started</span></div>
+<div class="tr" style="--d:1;height:36px"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Install</span></div>
+<div class="tr sel" style="--d:1;height:36px"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Linking Pages</span><span class="dot" role="img" aria-label="Unsaved changes"></span></div>
+<div class="tr" style="--d:1;height:36px"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Using Chat</span></div>
+<div class="tr" style="--d:0;height:36px"><span class="mi chev" aria-hidden="true">expand_more</span><span class="mi" aria-hidden="true">folder_open</span><span class="ell">Projects</span></div>
+<div class="tr" style="--d:1;height:36px"><span class="mi chev" aria-hidden="true">expand_more</span><span class="mi" aria-hidden="true">folder_open</span><span class="ell">Alpha</span></div>
+<div class="tr" style="--d:2;height:36px"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Overview</span></div>
+<div class="tr" style="--d:0;height:36px"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Welcome</span></div>
+</div>
+<p class="xs t3" style="margin:auto 12px 12px">Long-press a page or folder for Open, New, Rename, Move to and Delete.</p>
+</div>
+</div>
+</div>
+
+<div class="col" style="gap:10px">
+<p class="cap" style="margin:0">Editor tab (unsaved dot)</p>
+<div class="kgb" style="width:400px;height:820px">
+<header class="hdr"><span class="logo"><span class="mi s16" aria-hidden="true">hub</span></span><span class="rootchip"><span class="mi s14" aria-hidden="true">folder_open</span>my-notes</span><span class="grow"></span><a class="btn i" href="#settings" aria-label="Settings"><span class="mi" aria-hidden="true">settings</span></a><button class="btn i" aria-label="{{t.tl}}"><span class="mi" aria-hidden="true">{{t.ti}}</span></button></header>
+<div class="tabs" role="tablist">
+<button class="tab" role="tab"><span class="mi s16" aria-hidden="true">folder</span>Explorer</button>
+<button class="tab on" role="tab" aria-selected="true"><span class="mi s16" aria-hidden="true">edit_document</span>Editor<span class="dot" role="img" aria-label="unsaved changes"></span></button>
+<button class="tab" role="tab"><span class="mi s16" aria-hidden="true">forum</span>Chat<span class="nb" aria-label="2 approvals pending">2</span></button>
+</div>
+<div class="pane grow" style="background:var(--bg)">
+<div class="eh" style="background:var(--panel);flex-wrap:wrap;row-gap:8px">
+<div class="col grow" style="gap:1px"><div class="row" style="gap:6px"><h1 class="etitle" style="margin:0">Linking Pages</h1><span class="dot" role="img" aria-label="Unsaved changes"></span></div><nav class="crumb"><span>Getting Started</span><span class="mi s14" aria-hidden="true">chevron_right</span><span>Linking Pages.md</span></nav></div>
+<button class="btn i o" style="width:36px;height:36px" aria-label="Revert"><span class="mi" aria-hidden="true">undo</span></button>
+<button class="btn p" style="height:36px"><span class="mi s16" aria-hidden="true">save</span>Save</button>
+<div class="seg" style="width:100%;height:32px" role="radiogroup" aria-label="Editor mode"><button class="on" style="flex:1;justify-content:center" role="radio" aria-checked="true">Design</button><button style="flex:1;justify-content:center" role="radio" aria-checked="false">Source</button><button style="flex:1;justify-content:center" role="radio" aria-checked="false">Preview</button></div>
+</div>
+<div class="propbox"><div class="prophd" style="height:36px"><span class="mi s16" aria-hidden="true">chevron_right</span>Properties<span class="t3 mono" style="font-weight:400">title, tags, aliases, updated</span></div></div>
+<div class="mdbody solo" style="font-size:14px;padding:12px 14px">
+<h1>Linking Pages</h1>
+<p>Connect pages with wiki links. Type two square brackets and start typing a page name.</p>
+<h2>Four link forms</h2>
+<ul>
+<li><a class="wl">Install</a> — a bare page name</li>
+<li><a class="wl">Getting Started/Using Chat</a> — a folder path</li>
+<li><a class="wl">Welcome › Next steps</a> — a page and a heading</li>
+<li><a class="wl">the Alpha project</a> — display text</li>
+</ul>
+<h2>What's next</h2>
+<p>See the <a class="wu"><span class="mi" aria-hidden="true">link_off</span>Roadmap</a> for planned features.</p>
+</div>
+<section class="lp" aria-label="Links"><div class="lph" style="border-bottom:0;height:40px"><span class="mi s16" aria-hidden="true">chevron_right</span>Links<span class="grow"></span><span class="sm t3" style="font-weight:400">4 out · 2 back · 1 unresolved</span></div></section>
+</div>
+</div>
+</div>
+
+<div class="col" style="gap:10px">
+<p class="cap" style="margin:0">Chat tab (2 approvals pending)</p>
+<div class="kgb" style="width:400px;height:820px">
+<header class="hdr"><span class="logo"><span class="mi s16" aria-hidden="true">hub</span></span><span class="rootchip"><span class="mi s14" aria-hidden="true">folder_open</span>my-notes</span><span class="grow"></span><a class="btn i" href="#settings" aria-label="Settings"><span class="mi" aria-hidden="true">settings</span></a><button class="btn i" aria-label="{{t.tl}}"><span class="mi" aria-hidden="true">{{t.ti}}</span></button></header>
+<div class="tabs" role="tablist">
+<button class="tab" role="tab"><span class="mi s16" aria-hidden="true">folder</span>Explorer</button>
+<button class="tab" role="tab"><span class="mi s16" aria-hidden="true">edit_document</span>Editor<span class="dot" role="img" aria-label="unsaved changes"></span></button>
+<button class="tab on" role="tab" aria-selected="true"><span class="mi s16" aria-hidden="true">forum</span>Chat<span class="nb" aria-label="2 approvals pending">2</span></button>
+</div>
+<div class="pane grow">
+<div class="ph"><span class="chip"><span class="mi s14" aria-hidden="true">smart_toy</span>Anthropic · claude-sonnet-5-5</span><span class="grow"></span><button class="btn o i" style="width:36px;height:36px" aria-label="New chat"><span class="mi" aria-hidden="true">add_comment</span></button></div>
+<div class="msgs" style="padding-bottom:122px">
+<div class="mu"><div class="who">You</div>Yes, add an FAQ page and a Roadmap page.</div>
+<div class="paused"><span class="mi s16 tp" aria-hidden="true">pause_circle</span><b>Waiting for your decision</b></div>
+<article class="ac">
+<div class="ach"><span class="bdg b-pr"><span class="mi" aria-hidden="true">note_add</span>Create page</span><span class="bdg b-ne"><span class="mi" aria-hidden="true">schedule</span>Pending</span><span class="grow"></span><button class="btn i" aria-label="Open diff full screen"><span class="mi s16" aria-hidden="true">open_in_full</span></button></div>
+<div class="acm" style="background:var(--panel)"><span class="acp">Getting Started/FAQ.md</span><span class="grow"></span><span class="ts b">+13</span></div>
+<div class="diff">
+<div class="dl add" style="grid-template-columns:26px 16px minmax(0,1fr)"><span class="n">7</span><span class="s">+</span><span class="x"># FAQ</span></div>
+<div class="dl add" style="grid-template-columns:26px 16px minmax(0,1fr)"><span class="n">8</span><span class="s">+</span><span class="x"></span></div>
+<div class="dl add" style="grid-template-columns:26px 16px minmax(0,1fr)"><span class="n">9</span><span class="s">+</span><span class="x">## How do I install it?</span></div>
+<button class="fold" style="width:100%;border-left:0;border-right:0;height:32px"><span class="mi s16" aria-hidden="true">unfold_more</span>Show all 13 lines</button>
+</div>
+<div class="acf"><button class="btn o grow" style="height:36px"><span class="mi s16" aria-hidden="true">close</span>Reject</button><button class="btn p grow" style="height:36px"><span class="mi s16" aria-hidden="true">check</span>Apply</button></div>
+</article>
+<article class="ac">
+<div class="ach"><span class="bdg b-pr"><span class="mi" aria-hidden="true">note_add</span>Create page</span><span class="bdg b-ne"><span class="mi" aria-hidden="true">schedule</span>Pending</span><span class="grow"></span><button class="btn i" aria-label="Open diff full screen"><span class="mi s16" aria-hidden="true">open_in_full</span></button></div>
+<div class="acm" style="background:var(--panel)"><span class="acp">Roadmap.md</span><span class="grow"></span><span class="ts b">+11</span></div>
+</article>
+<div class="sbar" style="position:absolute;left:10px;right:10px;bottom:8px;flex-wrap:wrap;row-gap:8px">
+<span class="sm b">0 of 2 decided</span><span class="pbar grow" style="width:auto"><i style="width:0%"></i></span>
+<div class="row" style="width:100%;gap:8px"><button class="btn o grow" style="height:40px">Reject all</button><button class="btn p grow" style="height:40px"><span class="mi s16" aria-hidden="true">done_all</span>Apply all</button></div>
+</div>
+</div>
+<div class="comp">
+<div class="row" style="align-items:flex-end;gap:8px"><textarea class="ta grow" style="min-height:44px" aria-label="Message" placeholder="Ask a follow-up…"></textarea><button class="btn p i" style="width:44px;height:44px" aria-label="Send"><span class="mi" aria-hidden="true">send</span></button></div>
+<div class="xs t2" style="margin-top:6px">Sending now supersedes the 2 pending changes.</div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2752,"height":1020}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { themes: [{ cls: 'light', name: 'Light', ti: 'dark_mode', tl: 'Switch to dark theme' }, { cls: 'dark', name: 'Dark', ti: 'light_mode', tl: 'Switch to light theme' }] };
+  }
+}
+</script>
+</body>
+</html>

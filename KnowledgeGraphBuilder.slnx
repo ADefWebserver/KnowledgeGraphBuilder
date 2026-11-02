@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="KnowledgeGraphBuilder.AppHost/KnowledgeGraphBuilder.AppHost.csproj" />
+  <Project Path="KnowledgeGraphBuilder.ServiceDefaults/KnowledgeGraphBuilder.ServiceDefaults.csproj" />
+  <Project Path="KnowledgeGraphBuilder.Shared/KnowledgeGraphBuilder.Shared.csproj" />
+  <Project Path="KnowledgeGraphBuilder.Tests/KnowledgeGraphBuilder.Tests.csproj" />
+  <Project Path="KnowledgeGraphBuilder.Web/KnowledgeGraphBuilder.Web.csproj" />
+  <Project Path="KnowledgeGraphBuilder/KnowledgeGraphBuilder.csproj" />
+</Solution>

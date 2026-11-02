@@ -1,0 +1,372 @@
+@implements IDisposable
+@inject IChatOrchestrator Chat
+@inject IAppSettingsService Settings
+@inject IKnowledgeGraphIndex Graph
+@inject DialogService Dialogs
+@inject WorkspaceState State
+@inject BrowserInterop Browser
+@inject ChatTranscript Transcript
+
+<section class="kgb-pane" aria-label="Chat">
+    <div class="kgb-ph">
+        <span class="kgb-pt">Chat</span>
+        <span class="kgb-chip" title="@ProviderLabel"><span class="mi s14" aria-hidden="true">smart_toy</span>@ProviderLabel</span>
+        <span class="grow"></span>
+        <RadzenButton Icon="add_comment" Text="New chat" Variant="Variant.Text" ButtonStyle="ButtonStyle.Base" Size="ButtonSize.Small" Click="@NewChatAsync" Disabled="@busy" />
+    </div>
+
+    <div class="kgb-msgs" id="kgb-msgs" role="log" aria-live="polite" aria-relevant="additions">
+        @if (items.Count == 0 && settings is not null && !keyMissing)
+        {
+            <div class="kgb-empty sm">
+                <span class="mi s20" aria-hidden="true">forum</span>
+                <div>Ask about your pages. Answers cite pages as links, and any change is shown as a diff for you to approve.</div>
+            </div>
+        }
+        @if (keyMissing && items.Count == 0)
+        {
+            <NoKeyCard Reason="Add an API key in Settings" />
+        }
+        @foreach (var item in items)
+        {
+            switch (item)
+            {
+                case UserItem u:
+                    <div class="kgb-mu">@u.Text</div>
+                    break;
+                case AssistantItem a:
+                    <div class="kgb-ma">
+                        <div class="kgb-who">Assistant</div>
+                        @if (a.Text.Length == 0 && a.Streaming)
+                        {
+                            <span class="kgb-typing" aria-label="Thinking"><i></i><i></i><i></i></span>
+                        }
+                        else
+                        {
+                            @((MarkupString)SafeMarkdown.ForChat(a.Text.ToString(), Resolve))
+                            @if (a.Streaming) { <span class="kgb-caret" aria-hidden="true"></span> }
+                        }
+                    </div>
+                    break;
+                case ToolItem t:
+                    <div class="kgb-tool"><span class="mi" aria-hidden="true">@(t.Name.StartsWith("search") ? "search" : t.Name.StartsWith("read") ? "article" : t.Name.StartsWith("list") ? "folder_open" : "hub")</span><span class="fn">@t.Name</span><span class="ell">@t.Args</span></div>
+                    break;
+                case ApprovalItem card:
+                    <ApprovalCard Item="@card" Undecided="@Undecided" Disabled="@(busy && !awaiting)"
+                                  OnDecide="@(approved => DecideAsync(card, approved))" OnUndo="@(() => Undo(card))"
+                                  OnAskAgain="@(() => SendAsync($"The change to {card.Proposal.Path} wasn't applied because the page changed. Please read it again and propose the update again."))" />
+                    break;
+                case PagesChangedItem pc:
+                    <div class="kgb-note" role="status">
+                        <span class="mi" aria-hidden="true">check_circle</span>
+                        <div>Pages changed:
+                            @foreach (var c in pc.Changes)
+                            {
+                                if (c.Kind == ChangeKind.FolderCreated)
+                                {
+                                    <span class="mono"> @c.Path</span>
+                                }
+                                else
+                                {
+                                    <a class="cite" href="@SafeMarkdown.PageHref(c.Path)"><span class="mi" aria-hidden="true">description</span>@KnowledgePath.StripExtension(c.Path)</a>
+                                }
+                                @(" ")
+                            }
+                        </div>
+                    </div>
+                    break;
+                case ErrorItem err:
+                    <div class="kgb-callout da" role="alert">
+                        <span class="mi" aria-hidden="true">error</span>
+                        <div class="grow">@err.Message</div>
+                        @if (err.Retryable && !busy)
+                        {
+                            <RadzenButton Text="Retry" Size="ButtonSize.Small" Variant="Variant.Outlined" ButtonStyle="ButtonStyle.Base" Click="@(() => RetryAsync(err))" />
+                        }
+                    </div>
+                    break;
+                case NoKeyItem nk:
+                    <NoKeyCard Reason="@nk.Reason" />
+                    break;
+            }
+        }
+        @if (awaiting && Cards.Count(c => c.State == CardState.Pending || (c.State is CardState.Approved or CardState.Rejected && !c.Submitted)) >= 2)
+        {
+            var open = Cards.Where(c => !c.Submitted && c.State is CardState.Pending or CardState.Approved or CardState.Rejected).ToList();
+            var decided = open.Count(c => c.State != CardState.Pending);
+            <div class="kgb-sbar" role="region" aria-label="Pending changes">
+                <span class="sm">@decided of @open.Count decided</span>
+                <span class="kgb-pbar" aria-hidden="true"><i style="width:@(open.Count == 0 ? 0 : decided * 100 / open.Count)%"></i></span>
+                <span class="grow"></span>
+                <RadzenButton Text="Reject all" Variant="Variant.Outlined" ButtonStyle="ButtonStyle.Base" Size="ButtonSize.Small" Click="@(() => DecideAllAsync(false))" />
+                <RadzenButton Text="Apply all" Icon="done_all" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Click="@(() => DecideAllAsync(true))" />
+            </div>
+        }
+    </div>
+
+    <div class="kgb-comp">
+        @if (awaiting)
+        {
+            <div class="xs tw row" style="gap:4px"><span class="mi s14" aria-hidden="true">pause_circle</span>Waiting for your decision. Sending a message skips the pending changes.</div>
+        }
+        <RadzenTextArea id="kgb-composer" Value="@draft" @oninput="@(e => draft = e.Value?.ToString() ?? "")" class="kgb-ta" Rows="2"
+                        Placeholder="@(keyMissing ? "Add an API key in Settings to chat" : "Ask about your pages… (Enter sends, Shift+Enter adds a line)")"
+                        Disabled="@keyMissing" aria-label="Message" />
+        <div class="row">
+            <span class="grow xs t3">Page text the assistant reads is sent to @ProviderName.</span>
+            @if (busy && !awaiting)
+            {
+                <RadzenButton Text="Stop" Icon="stop" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@Stop" />
+            }
+            else
+            {
+                <RadzenButton Text="Send" Icon="send" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Disabled="@(keyMissing || string.IsNullOrWhiteSpace(draft))" Click="@(() => SendAsync(draft))" />
+            }
+        </div>
+    </div>
+</section>
+
+@code {
+    // Items live in a singleton so they survive switching between the wide and narrow layouts.
+    List<ChatItem> items => Transcript.Items;
+
+    AppSettings? settings;
+    bool keyMissing;
+    bool busy;
+    bool awaiting;
+    string draft = "";
+    CancellationTokenSource? cts;
+    DotNetObjectReference<ChatPane>? self;
+    bool scrollPending;
+
+    IEnumerable<ApprovalItem> Cards => items.OfType<ApprovalItem>();
+
+    int Undecided => Cards.Count(c => !c.Submitted && c.State == CardState.Pending);
+
+    string ProviderName => settings is null ? "the provider" : LlmDefaults.DisplayName(settings.Provider);
+
+    string ProviderLabel => settings is null ? "…" : $"{LlmDefaults.DisplayName(settings.Provider)}, {settings.Model}";
+
+    protected override async Task OnInitializedAsync()
+    {
+        Settings.Changed += OnSettingsChanged;
+        await LoadSettingsAsync();
+        awaiting = Chat.PendingRequestIds.Count > 0;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            self = DotNetObjectReference.Create(this);
+            try { await Browser.BindComposerAsync("kgb-composer", self); } catch (JSException) { }
+        }
+        if (scrollPending)
+        {
+            scrollPending = false;
+            try { await Browser.ScrollToBottomAsync("#kgb-msgs"); } catch (JSException) { }
+        }
+    }
+
+    async Task LoadSettingsAsync()
+    {
+        settings = await Settings.GetAsync();
+        keyMissing = LlmDefaults.RequiresKey(settings.Provider) && !settings.ApiKeyConfigured;
+    }
+
+    void OnSettingsChanged() => _ = InvokeAsync(async () => { await LoadSettingsAsync(); StateHasChanged(); });
+
+    string? Resolve(string target) => LinkResolver.ResolveWiki(Graph.Snapshot.Directory, "", target)?.Path;
+
+    [JSInvokable]
+    public Task OnComposerEnter(string value) => InvokeAsync(async () =>
+    {
+        draft = value ?? "";
+        if (busy && !awaiting) return;
+        await SendAsync(draft);
+    });
+
+    [JSInvokable]
+    public Task OnComposerEscape() => InvokeAsync(() => { if (busy && !awaiting) Stop(); });
+
+    async Task SendAsync(string text)
+    {
+        text = (text ?? "").Trim();
+        if (text.Length == 0 || keyMissing) return;
+        if (busy && !awaiting) return;
+
+        if (awaiting && Undecided + Cards.Count(c => !c.Submitted && c.State is CardState.Approved or CardState.Rejected) > 0)
+        {
+            var r = await Dialogs.ChooseAsync("Skip pending changes?", "Sending a new message skips the changes that are waiting for your decision. Nothing from them is written.",
+                [new("Cancel", "cancel", Default: true), new("Send anyway", "send", ButtonStyle.Primary, Variant.Filled)], "pause_circle", "wa");
+            if (r != "send") return;
+            foreach (var c in Cards.Where(c => !c.Submitted && c.State is CardState.Pending or CardState.Approved or CardState.Rejected))
+            {
+                c.State = CardState.Superseded;
+                c.Submitted = true;
+            }
+        }
+
+        draft = "";
+        try { await Browser.ClearValueAsync("kgb-composer"); } catch (JSException) { }
+        items.Add(new UserItem(text));
+        await RunAsync(ct => Chat.SendAsync(text, ct));
+    }
+
+    async Task RetryAsync(ErrorItem err)
+    {
+        err.Retryable = false;
+        await RunAsync(ct => Chat.RetryAsync(ct));
+    }
+
+    async Task RunAsync(Func<CancellationToken, IAsyncEnumerable<ChatEvent>> start)
+    {
+        busy = true;
+        awaiting = false;
+        UpdatePending();
+        cts = new CancellationTokenSource();
+        AssistantItem? current = null;
+        scrollPending = true;
+        StateHasChanged();
+        try
+        {
+            await foreach (var e in start(cts.Token))
+            {
+                switch (e)
+                {
+                    case TextDelta d:
+                        if (current is null)
+                        {
+                            current = new AssistantItem();
+                            items.Add(current);
+                        }
+                        current.Text.Append(d.Text);
+                        break;
+                    case ToolUsed t:
+                        EndAssistant(ref current);
+                        items.Add(new ToolItem(t.Name, t.ArgumentsSummary));
+                        break;
+                    case ApprovalRequired a:
+                        EndAssistant(ref current);
+                        items.Add(new ApprovalItem(a.RequestId, a.Proposal));
+                        break;
+                    case AwaitingApproval:
+                        awaiting = true;
+                        break;
+                    case WriteOutcome o:
+                        if (Cards.FirstOrDefault(c => c.RequestId == o.RequestId) is { } card)
+                        {
+                            card.State = o.Applied ? CardState.Applied : CardState.NotApplied;
+                            card.Error = o.Error;
+                        }
+                        break;
+                    case PagesChanged pc:
+                        EndAssistant(ref current);
+                        items.Add(new PagesChangedItem(pc.Changes));
+                        break;
+                    case ChatError err:
+                        EndAssistant(ref current);
+                        if (err.Message.Contains("API key", StringComparison.OrdinalIgnoreCase) && !err.Retryable)
+                            items.Add(new NoKeyItem(err.Message));
+                        else
+                            items.Add(new ErrorItem(err.Message, err.Retryable));
+                        break;
+                    case ChatCompleted:
+                        break;
+                }
+                scrollPending = true;
+                StateHasChanged();
+            }
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            items.Add(new ErrorItem(ex.Message, false));
+        }
+        finally
+        {
+            if (current is not null) current.Streaming = false;
+            foreach (var a in items.OfType<AssistantItem>()) a.Streaming = false;
+            busy = awaiting;
+            cts?.Dispose();
+            cts = null;
+            UpdatePending();
+            scrollPending = true;
+            StateHasChanged();
+        }
+    }
+
+    static void EndAssistant(ref AssistantItem? current)
+    {
+        if (current is not null) current.Streaming = false;
+        current = null;
+    }
+
+    void Stop()
+    {
+        if (awaiting)
+        {
+            Chat.CancelPending();
+            foreach (var c in Cards.Where(c => !c.Submitted && c.State is CardState.Pending or CardState.Approved or CardState.Rejected))
+            {
+                c.State = CardState.Cancelled;
+                c.Submitted = true;
+            }
+            awaiting = false;
+            busy = false;
+            UpdatePending();
+            return;
+        }
+        cts?.Cancel();
+    }
+
+    async Task DecideAsync(ApprovalItem card, bool approved)
+    {
+        if (card.Submitted || !awaiting) return;
+        card.State = approved ? CardState.Approved : CardState.Rejected;
+        await SubmitIfCompleteAsync();
+    }
+
+    void Undo(ApprovalItem card)
+    {
+        if (!card.Submitted) card.State = CardState.Pending;
+    }
+
+    async Task DecideAllAsync(bool approved)
+    {
+        foreach (var c in Cards.Where(c => !c.Submitted && c.State == CardState.Pending))
+            c.State = approved ? CardState.Approved : CardState.Rejected;
+        await SubmitIfCompleteAsync();
+    }
+
+    async Task SubmitIfCompleteAsync()
+    {
+        var open = Cards.Where(c => !c.Submitted).ToList();
+        UpdatePending();
+        if (open.Count == 0 || open.Any(c => c.State == CardState.Pending)) return;
+
+        var pendingIds = Chat.PendingRequestIds.ToHashSet();
+        var decisions = open.Where(c => pendingIds.Contains(c.RequestId))
+            .Select(c => new ApprovalDecision(c.RequestId, c.State == CardState.Approved, c.State == CardState.Rejected ? "User rejected" : null)).ToList();
+        foreach (var c in open) c.Submitted = true;
+        await RunAsync(ct => Chat.ResolveApprovalsAsync(decisions, ct));
+    }
+
+    void UpdatePending() => State.SetPendingApprovals(Cards.Count(c => !c.Submitted && c.State == CardState.Pending));
+
+    async Task NewChatAsync()
+    {
+        if (awaiting) Stop();
+        Chat.Reset();
+        items.Clear();
+        UpdatePending();
+        await LoadSettingsAsync();
+    }
+
+    public void Dispose()
+    {
+        Settings.Changed -= OnSettingsChanged;
+        cts?.Cancel();
+        self?.Dispose();
+    }
+}

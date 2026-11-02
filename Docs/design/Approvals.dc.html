@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Workspace with pending approvals</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./kgb.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&amp;display=block">
+<style>
+body{margin:0}
+a{color:#4340d2}a:hover{color:#2f2ca6}
+</style>
+</helmet>
+<div class="board" style="width:3040px;height:1012px">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div>
+<p class="tl">{{t.name}}</p>
+<div class="kgb {{t.cls}}" style="width:1440px;height:900px">
+<header class="hdr">
+<span class="logo"><span class="mi s16" aria-hidden="true">hub</span></span>
+<span class="appn">Knowledge Graph Builder</span>
+<span class="rootchip" title="C:\Users\me\Documents\my-notes"><span class="mi s14" aria-hidden="true">folder_open</span>my-notes</span>
+<span class="grow"></span>
+<a class="nav" href="#settings"><span class="mi s16" aria-hidden="true">settings</span>Settings</a>
+<button class="btn i" aria-label="{{t.tl}}"><span class="mi" aria-hidden="true">{{t.ti}}</span></button>
+</header>
+<div class="split">
+<section class="pane" style="width:260px;flex:none" aria-label="Explorer">
+<div class="ph"><span class="pt">Explorer</span><span class="grow"></span>
+<button class="btn sm i" aria-label="New page" title="New page"><span class="mi s16" aria-hidden="true">note_add</span></button>
+<button class="btn sm i" aria-label="New folder" title="New folder"><span class="mi s16" aria-hidden="true">create_new_folder</span></button>
+<button class="btn sm i" aria-label="Refresh" title="Refresh"><span class="mi s16" aria-hidden="true">refresh</span></button>
+<button class="btn sm i" aria-label="Collapse all" title="Collapse all"><span class="mi s16" aria-hidden="true">unfold_less</span></button>
+</div>
+<div style="padding:8px 8px 4px"><div class="search"><span class="mi s16" aria-hidden="true">search</span><input class="in" placeholder="Search pages" aria-label="Search pages"></div></div>
+<div class="tree" role="tree" aria-label="Pages">
+<div class="tr" role="treeitem" aria-expanded="true" style="--d:0"><span class="mi chev" aria-hidden="true">expand_more</span><span class="mi" aria-hidden="true">folder_open</span><span class="ell">Getting Started</span></div>
+<div class="tr" role="treeitem" style="--d:1"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Install</span></div>
+<div class="tr" role="treeitem" style="--d:1"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Linking Pages</span></div>
+<div class="tr" role="treeitem" style="--d:1"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Using Chat</span></div>
+<div class="tr" role="treeitem" aria-expanded="true" style="--d:0"><span class="mi chev" aria-hidden="true">expand_more</span><span class="mi" aria-hidden="true">folder_open</span><span class="ell">Projects</span></div>
+<div class="tr" role="treeitem" aria-expanded="true" style="--d:1"><span class="mi chev" aria-hidden="true">expand_more</span><span class="mi" aria-hidden="true">folder_open</span><span class="ell">Alpha</span></div>
+<div class="tr sel" role="treeitem" aria-selected="true" style="--d:2"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Overview</span></div>
+<div class="tr" role="treeitem" style="--d:0"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Welcome</span></div>
+</div>
+</section>
+<div class="gut" aria-hidden="true"></div>
+<main class="pane grow" aria-label="Editor" style="background:var(--bg)">
+<div class="eh" style="background:var(--panel)">
+<div class="col grow" style="gap:1px">
+<h1 class="etitle" style="margin:0">Alpha Project</h1>
+<nav class="crumb" aria-label="Path"><span>my-notes</span><span class="mi s14" aria-hidden="true">chevron_right</span><span>Projects</span><span class="mi s14" aria-hidden="true">chevron_right</span><span>Alpha</span><span class="mi s14" aria-hidden="true">chevron_right</span><span>Overview.md</span></nav>
+</div>
+<button class="btn tx sm" disabled><span class="mi s16" aria-hidden="true">undo</span>Revert</button>
+<button class="btn o sm" disabled><span class="mi s16" aria-hidden="true">save</span>Saved</button>
+<div class="seg" role="radiogroup" aria-label="Editor mode"><button class="on" role="radio" aria-checked="true">Design</button><button role="radio" aria-checked="false">Source</button><button role="radio" aria-checked="false"><span class="mi s16" aria-hidden="true">visibility</span>Preview</button></div>
+</div>
+<div class="propbox">
+<div class="prophd"><span class="mi s16" aria-hidden="true">expand_more</span>Properties<span class="t3 mono" style="font-weight:400">front-matter</span></div>
+<pre class="yaml"><span class="yk">title</span>: Alpha Project
+<span class="yk">tags</span>:
+  - project</pre>
+</div>
+<div class="mdtb" role="toolbar" aria-label="Formatting">
+<button class="btn sm i" aria-label="Bold"><span class="mi s16" aria-hidden="true">format_bold</span></button>
+<button class="btn sm i" aria-label="Italic"><span class="mi s16" aria-hidden="true">format_italic</span></button>
+<button class="btn sm i" aria-label="Heading"><span class="mi s16" aria-hidden="true">title</span></button>
+<span class="vs"></span>
+<button class="btn sm i" aria-label="Bulleted list"><span class="mi s16" aria-hidden="true">format_list_bulleted</span></button>
+<button class="btn sm i" aria-label="Numbered list"><span class="mi s16" aria-hidden="true">format_list_numbered</span></button>
+<button class="btn sm i" aria-label="Code"><span class="mi s16" aria-hidden="true">code</span></button>
+<span class="vs"></span>
+<button class="btn sm i" aria-label="Link"><span class="mi s16" aria-hidden="true">link</span></button>
+<button class="btn sm" aria-label="Insert wiki link"><span class="mi s16" aria-hidden="true">data_array</span>Wiki link</button>
+</div>
+<div class="mdbody" aria-label="Page content">
+<h1>Alpha Project</h1>
+<p>Overview of the Alpha project. How the knowledge base is organized is on <a class="wl">Welcome</a>.</p>
+<h2>Status</h2>
+<p class="t3">[STATUS]</p>
+<h2>Notes</h2>
+<ul><li class="t3">[NOTES]</li></ul>
+</div>
+<section class="lp" aria-label="Links">
+<div class="lph" style="border-bottom:0"><span class="mi s16" aria-hidden="true">chevron_right</span>Links<span class="row sm t3" style="font-weight:400;gap:10px;margin-left:8px"><span>Outgoing <span class="cnt">1</span></span><span>Backlinks <span class="cnt">1</span></span><span>Unresolved <span class="cnt">0</span></span></span></div>
+</section>
+</main>
+<div class="gut" aria-hidden="true"></div>
+<aside class="pane" style="width:540px;flex:none" aria-label="Chat">
+<div class="ph"><span class="pt">Chat</span><span class="chip" style="margin-left:6px"><span class="mi s14" aria-hidden="true">smart_toy</span>Anthropic · claude-sonnet-5-5</span><span class="grow"></span><button class="btn sm o"><span class="mi s16" aria-hidden="true">add_comment</span>New chat</button></div>
+<div class="msgs" role="log" aria-live="polite" style="padding-bottom:70px">
+<div class="ma"><div class="who">Assistant</div><p>Two pages cover installation. Start with <a class="cite"><span class="mi" aria-hidden="true">description</span>Getting Started/Install</a>, and see <a class="cite"><span class="mi" aria-hidden="true">description</span>Welcome</a> for an overview. I can add an FAQ page if you like.</p></div>
+<div class="mu"><div class="who">You</div>Yes, add an FAQ page and a Roadmap page.</div>
+<div class="col" style="gap:3px">
+<div class="tool"><span class="mi" aria-hidden="true">edit_document</span><span class="fn">propose_page</span><span>Getting Started/FAQ.md</span><span class="grow"></span><span class="mi tp" aria-label="waiting for approval">pending</span></div>
+<div class="tool"><span class="mi" aria-hidden="true">edit_document</span><span class="fn">propose_page</span><span>Roadmap.md</span><span class="grow"></span><span class="mi tp" aria-label="waiting for approval">pending</span></div>
+</div>
+<div class="paused"><span class="mi s16 tp" aria-hidden="true">pause_circle</span><span><b>Waiting for your decision.</b> 2 proposed changes. Nothing is written until you apply.</span></div>
+<article class="ac" aria-label="Proposed change 1 of 2: Create page Getting Started/FAQ.md">
+<div class="ach"><span class="bdg b-pr"><span class="mi" aria-hidden="true">note_add</span>Create page</span><span class="acp ell grow">Getting Started/FAQ.md</span><span class="bdg b-ne"><span class="mi" aria-hidden="true">schedule</span>Pending</span><button class="btn sm i" aria-label="Open diff full screen" title="Full screen"><span class="mi s16" aria-hidden="true">open_in_full</span></button></div>
+<div class="acm"><span class="ts b">+13</span><span>new file · 13 lines</span></div>
+<div class="diff">
+<div class="dl add"><span class="n"></span><span class="n">1</span><span class="s">+</span><span class="x">---</span></div>
+<div class="dl add"><span class="n"></span><span class="n">2</span><span class="s">+</span><span class="x">title: FAQ</span></div>
+<div class="dl add"><span class="n"></span><span class="n">3</span><span class="s">+</span><span class="x">tags:</span></div>
+<div class="dl add"><span class="n"></span><span class="n">4</span><span class="s">+</span><span class="x">  - guide</span></div>
+<div class="dl add"><span class="n"></span><span class="n">5</span><span class="s">+</span><span class="x">updated: 2026-11-01</span></div>
+<div class="dl add"><span class="n"></span><span class="n">6</span><span class="s">+</span><span class="x">---</span></div>
+<div class="dl add"><span class="n"></span><span class="n">7</span><span class="s">+</span><span class="x"># FAQ</span></div>
+<div class="dl add"><span class="n"></span><span class="n">8</span><span class="s">+</span><span class="x"></span></div>
+<div class="dl add"><span class="n"></span><span class="n">9</span><span class="s">+</span><span class="x">## How do I install it?</span></div>
+<div class="dl add"><span class="n"></span><span class="n">10</span><span class="s">+</span><span class="x">Follow [[Getting Started/Install]]. For an overview, see [[Welcome]].</span></div>
+<button class="fold" style="width:100%;border-left:0;border-right:0;cursor:pointer"><span class="mi s16" aria-hidden="true">unfold_more</span>Show all 13 lines</button>
+</div>
+<div class="acf"><span class="xs t3">1 of 2</span><span class="grow"></span><button class="btn sm o"><span class="mi s16" aria-hidden="true">close</span>Reject</button><button class="btn sm p fr"><span class="mi s16" aria-hidden="true">check</span>Apply</button></div>
+</article>
+<article class="ac" aria-label="Proposed change 2 of 2: Create page Roadmap.md">
+<div class="ach"><span class="bdg b-pr"><span class="mi" aria-hidden="true">note_add</span>Create page</span><span class="acp ell grow">Roadmap.md</span><span class="bdg b-ne"><span class="mi" aria-hidden="true">schedule</span>Pending</span><button class="btn sm i" aria-label="Open diff full screen" title="Full screen"><span class="mi s16" aria-hidden="true">open_in_full</span></button></div>
+<div class="acm"><span class="ts b">+11</span><span>new file · 11 lines · resolves 1 unresolved link</span></div>
+<div class="diff">
+<div class="dl add"><span class="n"></span><span class="n">1</span><span class="s">+</span><span class="x">---</span></div>
+<div class="dl add"><span class="n"></span><span class="n">2</span><span class="s">+</span><span class="x">title: Roadmap</span></div>
+<div class="dl add"><span class="n"></span><span class="n">3</span><span class="s">+</span><span class="x">tags:</span></div>
+</div>
+</article>
+<div class="sbar" style="position:absolute;left:12px;right:12px;bottom:10px" role="region" aria-label="Decide all proposed changes">
+<span class="mi s20 tp" aria-hidden="true">rule</span>
+<div class="col" style="gap:4px"><span class="sm b">0 of 2 decided</span><span class="pbar" role="progressbar" aria-valuenow="0" aria-valuemax="2" aria-label="Decided"><i style="width:0%"></i></span></div>
+<span class="grow"></span>
+<button class="btn sm o"><span class="mi s16" aria-hidden="true">close</span>Reject all</button>
+<button class="btn sm p"><span class="mi s16" aria-hidden="true">done_all</span>Apply all</button>
+</div>
+</div>
+<div class="comp">
+<textarea class="ta" aria-label="Message" placeholder="Ask a follow-up…" aria-describedby="supersede-hint"></textarea>
+<div class="row" style="margin-top:6px"><span class="mi s14 tw" aria-hidden="true">info</span><span class="xs t2" id="supersede-hint">Sending a message now will supersede the 2 pending changes.</span><span class="grow"></span><button class="btn sm p" aria-label="Send (Enter)"><span class="mi s16" aria-hidden="true">send</span>Send</button></div>
+</div>
+</aside>
+</div>
+</div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":3040,"height":1012}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { themes: [{ cls: 'light', name: 'Light', ti: 'dark_mode', tl: 'Switch to dark theme' }, { cls: 'dark', name: 'Dark', ti: 'light_mode', tl: 'Switch to light theme' }] };
+  }
+}
+</script>
+</body>
+</html>

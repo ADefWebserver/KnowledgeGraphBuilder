@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Design system</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./kgb.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&amp;display=block">
+<style>
+body{margin:0}
+a{color:#4340d2}a:hover{color:#2f2ca6}
+</style>
+</helmet>
+<div class="board" style="width:2980px;height:1500px">
+<div style="width:1100px;display:flex;flex-direction:column;gap:24px">
+<div class="spec">
+<p class="cap" style="color:#5f5f70">Knowledge Graph Builder · Radzen Material, compact</p>
+<h1 style="margin:0 0 6px;font:500 28px/36px Roboto,sans-serif">Design system</h1>
+<p style="margin:0;color:#4a4a58;font-size:14px;line-height:21px;max-width:900px">Overrides for the Radzen Material and Material Dark themes, plus a handful of app classes for wiki links, citations, tool rows, diffs and status. Everything else is stock Radzen.</p>
+</div>
+<div class="spec">
+<p class="h3">Color tokens</p>
+<div class="tok" style="font-weight:500;color:#4a4a58;font-size:11.5px"><span>L</span><span>D</span><span>Token</span><span>Use</span><span>Light</span><span>Dark</span></div>
+<div class="tok"><span class="sw" style="background:#f6f6f9"></span><span class="sw" style="background:#111117"></span><span class="mono">--rz-base-background-color</span><span>App background, gutters</span><span class="mono">#F6F6F9</span><span class="mono">#111117</span></div>
+<div class="tok"><span class="sw" style="background:#ffffff"></span><span class="sw" style="background:#1a1a22"></span><span class="mono">--rz-panel-background-color</span><span>Panes, cards, dialogs, menus</span><span class="mono">#FFFFFF</span><span class="mono">#1A1A22</span></div>
+<div class="tok"><span class="sw" style="background:#f0f0f5"></span><span class="sw" style="background:#20202a"></span><span class="mono">--kgb-surface</span><span>Properties box, card footers, hover</span><span class="mono">#F0F0F5</span><span class="mono">#20202A</span></div>
+<div class="tok"><span class="sw" style="background:#e8e8ef"></span><span class="sw" style="background:#2a2a36"></span><span class="mono">--kgb-surface-2</span><span>User message bubble, inline code, menu hover</span><span class="mono">#E8E8EF</span><span class="mono">#2A2A36</span></div>
+<div class="tok"><span class="sw" style="background:#dcdce4"></span><span class="sw" style="background:#31313d"></span><span class="mono">--rz-border-color</span><span>Dividers, pane borders</span><span class="mono">#DCDCE4</span><span class="mono">#31313D</span></div>
+<div class="tok"><span class="sw" style="background:#c6c6d2"></span><span class="sw" style="background:#454555"></span><span class="mono">--kgb-border-strong</span><span>Inputs, outlined buttons, cards</span><span class="mono">#C6C6D2</span><span class="mono">#454555</span></div>
+<div class="tok"><span class="sw" style="background:#1b1b22"></span><span class="sw" style="background:#e9e9f0"></span><span class="mono">--rz-text-color</span><span>Body text</span><span class="mono">#1B1B22</span><span class="mono">#E9E9F0</span></div>
+<div class="tok"><span class="sw" style="background:#4a4a58"></span><span class="sw" style="background:#c0c0cf"></span><span class="mono">--rz-text-secondary-color</span><span>Labels, icons, pane titles</span><span class="mono">#4A4A58</span><span class="mono">#C0C0CF</span></div>
+<div class="tok"><span class="sw" style="background:#5f5f70"></span><span class="sw" style="background:#a3a3b5"></span><span class="mono">--rz-text-tertiary-color</span><span>Paths, tool rows, line numbers (≥4.5:1)</span><span class="mono">#5F5F70</span><span class="mono">#A3A3B5</span></div>
+<div class="tok"><span class="sw" style="background:#4340d2"></span><span class="sw" style="background:#aeacff"></span><span class="mono">--rz-primary</span><span>Primary actions, wiki links, selection, focus ring</span><span class="mono">#4340D2</span><span class="mono">#AEACFF</span></div>
+<div class="tok"><span class="sw" style="background:#ffffff"></span><span class="sw" style="background:#16154a"></span><span class="mono">--rz-on-primary</span><span>Text on primary</span><span class="mono">#FFFFFF</span><span class="mono">#16154A</span></div>
+<div class="tok"><span class="sw" style="background:#ecebfc"></span><span class="sw" style="background:#2a2950"></span><span class="mono">--rz-primary-lighter</span><span>Selected tree row, citation chip, active segment</span><span class="mono">#ECEBFC</span><span class="mono">#2A2950</span></div>
+<div class="tok"><span class="sw" style="background:#8a5300"></span><span class="sw" style="background:#f2b866"></span><span class="mono">--rz-warning</span><span>Unresolved links, unsaved dot, Invalid YAML</span><span class="mono">#8A5300</span><span class="mono">#F2B866</span></div>
+<div class="tok"><span class="sw" style="background:#fff4e0"></span><span class="sw" style="background:#36290f"></span><span class="mono">--rz-warning-lighter</span><span>Warning badge and callout fill</span><span class="mono">#FFF4E0</span><span class="mono">#36290F</span></div>
+<div class="tok"><span class="sw" style="background:#b3261e"></span><span class="sw" style="background:#ff9a8f"></span><span class="mono">--rz-danger</span><span>Delete, errors, invalid drop</span><span class="mono">#B3261E</span><span class="mono">#FF9A8F</span></div>
+<div class="tok"><span class="sw" style="background:#fdecea"></span><span class="sw" style="background:#3b1c1a"></span><span class="mono">--rz-danger-lighter</span><span>Error badge and callout fill</span><span class="mono">#FDECEA</span><span class="mono">#3B1C1A</span></div>
+<div class="tok"><span class="sw" style="background:#1e7a3c"></span><span class="sw" style="background:#7fd89c"></span><span class="mono">--rz-success</span><span>Applied, Saved, Configured</span><span class="mono">#1E7A3C</span><span class="mono">#7FD89C</span></div>
+<div class="tok"><span class="sw" style="background:#e4f4e9"></span><span class="sw" style="background:#16301f"></span><span class="mono">--rz-success-lighter</span><span>Success badge, Pages changed note</span><span class="mono">#E4F4E9</span><span class="mono">#16301F</span></div>
+<div class="tok"><span class="sw" style="background:#0b5ea8"></span><span class="sw" style="background:#8cc4ff"></span><span class="mono">--rz-info</span><span>Info callouts and toasts</span><span class="mono">#0B5EA8</span><span class="mono">#8CC4FF</span></div>
+<div class="tok"><span class="sw" style="background:#e6f4ea"></span><span class="sw" style="background:#15301f"></span><span class="mono">--kgb-diff-add-bg / -fg</span><span>Added line (+), text #0F4D27 / #B5EBC6</span><span class="mono">#E6F4EA</span><span class="mono">#15301F</span></div>
+<div class="tok"><span class="sw" style="background:#fdecea"></span><span class="sw" style="background:#3a1a1a"></span><span class="mono">--kgb-diff-del-bg / -fg</span><span>Removed line (−), text #7D1A14 / #FFC1B9</span><span class="mono">#FDECEA</span><span class="mono">#3A1A1A</span></div>
+<div class="tok" style="border-bottom:0"><span class="sw" style="background:#fff1a8"></span><span class="sw" style="background:#5b4a12"></span><span class="mono">--kgb-mark</span><span>Search match highlight</span><span class="mono">#FFF1A8</span><span class="mono">#5B4A12</span></div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px">
+<div class="spec">
+<p class="h3">Typography</p>
+<div style="display:flex;flex-direction:column;gap:10px">
+<div class="row" style="justify-content:space-between"><span style="font:500 16px/22px Roboto">Page title · Roboto 500 16/22</span><span class="mono" style="color:#5f5f70">editor header</span></div>
+<div class="row" style="justify-content:space-between"><span style="font:500 15px/20px Roboto">Card title · 500 15/20</span><span class="mono" style="color:#5f5f70">settings, dialogs 16</span></div>
+<div class="row" style="justify-content:space-between"><span style="font:400 13px/18px Roboto">UI body · 400 13/18</span><span class="mono" style="color:#5f5f70">tree, chat, forms</span></div>
+<div class="row" style="justify-content:space-between"><span style="font:400 14px/22px Roboto">Page body · 400 14/22</span><span class="mono" style="color:#5f5f70">editor content</span></div>
+<div class="row" style="justify-content:space-between"><span style="font:500 11px/14px Roboto;letter-spacing:.07em;text-transform:uppercase">Overline · 500 11 caps</span><span class="mono" style="color:#5f5f70">pane titles</span></div>
+<div class="row" style="justify-content:space-between"><span style="font:400 12px/18px 'JetBrains Mono',monospace">title: Alpha Project</span><span class="mono" style="color:#5f5f70">JetBrains Mono 12/18</span></div>
+<div class="row" style="justify-content:space-between"><span style="font:400 11.5px/16px 'JetBrains Mono',monospace">Getting Started/Install.md</span><span class="mono" style="color:#5f5f70">paths, diffs 11.5</span></div>
+</div>
+</div>
+<div class="spec">
+<p class="h3">Spacing and shape (compact)</p>
+<div style="display:flex;flex-direction:column;gap:9px;font-size:12.5px">
+<div class="row"><span class="mono" style="width:120px">base unit</span><span>4 px; scale 2 · 4 · 6 · 8 · 12 · 16 · 24</span></div>
+<div class="row"><span class="mono" style="width:120px">controls</span><span>24 small · 28 default · 30 input · 36 large · 44 touch/tabs</span></div>
+<div class="row"><span class="mono" style="width:120px">rows</span><span>tree 26 · menu 30 · header 44 · pane title 38</span></div>
+<div class="row"><span class="mono" style="width:120px">radius</span><span>4 controls · 6 boxes · 8 cards, dialogs · 10–12 chips</span></div>
+<div class="row"><span class="mono" style="width:120px">pane padding</span><span>12 px; dialog 18 px; card 16 × 18</span></div>
+<div class="row"><span class="mono" style="width:120px">focus</span><span>2 px --rz-primary outline, 2 px offset</span></div>
+<div class="row" style="gap:6px;margin-top:4px"><span style="width:4px;height:16px;background:#4340d2"></span><span style="width:8px;height:16px;background:#4340d2"></span><span style="width:12px;height:16px;background:#4340d2"></span><span style="width:16px;height:16px;background:#4340d2"></span><span style="width:24px;height:16px;background:#4340d2"></span></div>
+</div>
+</div>
+</div>
+</div>
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div>
+<p class="tl">{{t.name}}</p>
+<div class="sheet {{t.cls}}" style="width:860px;display:flex;flex-direction:column;gap:22px">
+<div>
+<p class="cap">Buttons and focus</p>
+<div class="row" style="flex-wrap:wrap;gap:10px">
+<button class="btn p"><span class="mi s16" aria-hidden="true">check</span>Apply</button>
+<button class="btn o"><span class="mi s16" aria-hidden="true">close</span>Reject</button>
+<button class="btn tx">Revert</button>
+<button class="btn d"><span class="mi s16" aria-hidden="true">delete</span>Move to Recycle Bin</button>
+<button class="btn o i" aria-label="Refresh"><span class="mi" aria-hidden="true">refresh</span></button>
+<button class="btn p fr"><span class="mi s16" aria-hidden="true">save</span>Save</button>
+<span class="sm t3">← focused (2 px ring)</span>
+<span class="kbd">Ctrl+S</span><span class="kbd">F2</span><span class="kbd">Del</span><span class="kbd">Esc</span>
+</div>
+</div>
+<div>
+<p class="cap">Inputs</p>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px">
+<div><label class="lbl">Default</label><input class="in" value="Troubleshooting"></div>
+<div><label class="lbl">Focused</label><input class="in fr" value="Troubleshooting"></div>
+<div><label class="lbl">Invalid</label><input class="in inv" value="NUL" aria-invalid="true"><div class="err"><span class="mi s16" aria-hidden="true">error</span>NUL is a reserved Windows name.</div></div>
+</div>
+</div>
+<div>
+<p class="cap">Wiki links (all four forms) and unresolved</p>
+<div style="background:var(--panel);border:1px solid var(--bd);border-radius:6px;padding:12px 16px;font-size:14px;line-height:24px">
+Start with <a class="wl">Install</a>, then <a class="wl">Getting Started/Using Chat</a> and <a class="wl">Welcome › Next steps</a>. Status lives in <a class="wl">the Alpha project</a>. Planned work: <a class="wu"><span class="mi" aria-hidden="true">link_off</span>Roadmap</a>
+<div class="row sm t3" style="margin-top:8px;gap:14px;flex-wrap:wrap"><span class="ic">[[Install]]</span><span class="ic">[[Getting Started/Using Chat]]</span><span class="ic">[[Welcome#Next steps]]</span><span class="ic">[[Overview|the Alpha project]]</span><span class="ic">[[Roadmap]] → no page</span></div>
+</div>
+<p class="sm t3" style="margin:6px 0 0">Resolved: primary, solid underline. Unresolved: warning color, dashed underline, link_off icon, tooltip “No page yet. Click to create.”</p>
+</div>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px">
+<div>
+<p class="cap">Citation chips and external links</p>
+<div class="ma" style="background:var(--panel);border:1px solid var(--bd);border-radius:6px;padding:10px 12px">Start with <a class="cite"><span class="mi" aria-hidden="true">description</span>Getting Started/Install</a> and see <a class="cite"><span class="mi" aria-hidden="true">description</span>Welcome</a>. Download page: <span class="ext"><span class="mi" aria-hidden="true">link</span> https://dotnet.microsoft.com/download</span></div>
+<p class="sm t3" style="margin:6px 0 0">External URLs are inert text, never anchors.</p>
+</div>
+<div>
+<p class="cap">Tool activity rows</p>
+<div style="background:var(--panel);border:1px solid var(--bd);border-radius:6px;padding:10px 12px;display:flex;flex-direction:column;gap:4px">
+<div class="tool"><span class="mi" aria-hidden="true">search</span><span class="fn">search_pages</span><span>query=install</span><span class="grow"></span><span class="mi ts" aria-label="done">check</span></div>
+<div class="tool"><span class="mi" aria-hidden="true">article</span><span class="fn">read_page</span><span>Getting Started/Install</span><span class="grow"></span><span class="mi ts" aria-label="done">check</span></div>
+<div class="tool"><span class="mi" aria-hidden="true">edit_document</span><span class="fn">propose_page</span><span>Roadmap.md</span><span class="grow"></span><span class="spin" aria-label="running"></span></div>
+</div>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px">
+<div>
+<p class="cap">Diff lines</p>
+<div class="diff" style="border:1px solid var(--bd);border-radius:6px;overflow:hidden">
+<div class="dl"><span class="n">18</span><span class="n">18</span><span class="s"> </span><span class="x">## What's next</span></div>
+<div class="fold"><span class="mi s16" aria-hidden="true">unfold_more</span>Show 4 unchanged lines</div>
+<div class="dl rm"><span class="n">23</span><span class="n"></span><span class="s">−</span><span class="x">See the [[Roadmap]] for plans.</span></div>
+<div class="dl add"><span class="n"></span><span class="n">23</span><span class="s">+</span><span class="x">See the [[Roadmap]] and [[FAQ]].</span></div>
+</div>
+</div>
+<div>
+<p class="cap">Unsaved dot</p>
+<div style="background:var(--panel);border:1px solid var(--bd);border-radius:6px;padding:6px">
+<div class="tr sel" style="--d:0"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="grow">Linking Pages</span><span class="dot" role="img" aria-label="Unsaved changes" title="Unsaved changes"></span></div>
+<div class="row" style="padding:8px 4px 2px"><span class="etitle" style="font-size:14px">Linking Pages</span><span class="dot" role="img" aria-label="Unsaved changes"></span><span class="sm t3">Unsaved</span></div>
+</div>
+</div>
+</div>
+<div>
+<p class="cap">Status badges (icon + word)</p>
+<div class="row" style="flex-wrap:wrap;gap:8px">
+<span class="bdg b-ne"><span class="mi" aria-hidden="true">schedule</span>Pending</span>
+<span class="bdg b-pr"><span class="mi" aria-hidden="true">check</span>Approved</span>
+<span class="bdg b-su"><span class="mi" aria-hidden="true">check_circle</span>Applied</span>
+<span class="bdg b-ne"><span class="mi" aria-hidden="true">block</span>Rejected</span>
+<span class="bdg b-wa"><span class="mi" aria-hidden="true">warning</span>Not applied: page changed</span>
+<span class="bdg b-ne"><span class="mi" aria-hidden="true">cancel</span>Cancelled</span>
+<span class="bdg b-ne"><span class="mi" aria-hidden="true">redo</span>Superseded</span>
+<span class="bdg b-wa"><span class="mi" aria-hidden="true">warning</span>Invalid YAML</span>
+<span class="bdg b-su"><span class="mi" aria-hidden="true">key</span>Configured</span>
+<span class="bdg b-da"><span class="mi" aria-hidden="true">key_off</span>Not set</span>
+<span class="bdg b-pr"><span class="mi" aria-hidden="true">note_add</span>Create page</span>
+<span class="bdg b-in"><span class="mi" aria-hidden="true">edit_note</span>Update page</span>
+<span class="bdg b-pr"><span class="mi" aria-hidden="true">create_new_folder</span>Create folder</span>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start">
+<div>
+<p class="cap">Tabs (narrow)</p>
+<div class="tabs" style="border:1px solid var(--bd);border-radius:6px;overflow:hidden" role="tablist">
+<button class="tab" role="tab"><span class="mi s16" aria-hidden="true">folder</span>Explorer</button>
+<button class="tab on" role="tab" aria-selected="true"><span class="mi s16" aria-hidden="true">edit_document</span>Editor<span class="dot" role="img" aria-label="unsaved changes"></span></button>
+<button class="tab" role="tab"><span class="mi s16" aria-hidden="true">forum</span>Chat<span class="nb" aria-label="2 approvals pending">2</span></button>
+</div>
+</div>
+<div>
+<p class="cap">Toast</p>
+<div class="toast" style="width:100%;box-shadow:none" role="status"><span class="ti su"><span class="mi s16" aria-hidden="true">check</span></span><div class="grow"><div class="b">Saved</div><div class="sm t2">Getting Started/Linking Pages.md</div></div><button class="btn sm i" aria-label="Dismiss"><span class="mi s16" aria-hidden="true">close</span></button></div>
+</div>
+</div>
+</div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2980,"height":1500}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { themes: [{ cls: 'light', name: 'Components · light' }, { cls: 'dark', name: 'Components · dark' }] };
+  }
+}
+</script>
+</body>
+</html>

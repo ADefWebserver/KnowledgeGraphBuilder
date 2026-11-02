@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Explorer states</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./kgb.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&amp;display=block">
+<style>
+body{margin:0}
+a{color:#4340d2}a:hover{color:#2f2ca6}
+</style>
+</helmet>
+<div class="board" style="width:2760px;height:772px">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div>
+<p class="tl">{{t.name}}</p>
+<div class="sheet {{t.cls}}" style="width:1320px;height:660px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px">
+
+<div class="col" style="gap:10px">
+<p class="cap" style="margin:0">Context menu open (right-click on Install)</p>
+<section class="pane" style="height:560px;border:1px solid var(--bd);border-radius:8px;position:relative" aria-label="Explorer">
+<div class="ph"><span class="pt">Explorer</span><span class="grow"></span><button class="btn sm i" aria-label="New page"><span class="mi s16" aria-hidden="true">note_add</span></button><button class="btn sm i" aria-label="New folder"><span class="mi s16" aria-hidden="true">create_new_folder</span></button><button class="btn sm i" aria-label="Refresh"><span class="mi s16" aria-hidden="true">refresh</span></button><button class="btn sm i" aria-label="Collapse all"><span class="mi s16" aria-hidden="true">unfold_less</span></button></div>
+<div style="padding:8px 8px 4px"><div class="search"><span class="mi s16" aria-hidden="true">search</span><input class="in" placeholder="Search pages" aria-label="Search pages"></div></div>
+<div class="tree">
+<div class="tr" style="--d:0"><span class="mi chev" aria-hidden="true">expand_more</span><span class="mi" aria-hidden="true">folder_open</span><span class="ell">Getting Started</span></div>
+<div class="tr ctx fr" style="--d:1;outline-offset:-2px"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Install</span></div>
+<div class="tr" style="--d:1"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Linking Pages</span></div>
+<div class="tr" style="--d:1"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Using Chat</span></div>
+<div class="tr" style="--d:0"><span class="mi chev" aria-hidden="true">expand_more</span><span class="mi" aria-hidden="true">folder_open</span><span class="ell">Projects</span></div>
+<div class="tr" style="--d:1"><span class="mi chev" aria-hidden="true">chevron_right</span><span class="mi" aria-hidden="true">folder</span><span class="ell">Alpha</span></div>
+<div class="tr" style="--d:0"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Welcome</span></div>
+</div>
+<div class="menu" role="menu" aria-label="Install" style="left:70px;top:118px">
+<div class="mit" role="menuitem"><span class="mi s16" aria-hidden="true">open_in_new</span>Open<span class="k">Enter</span></div>
+<div class="msep"></div>
+<div class="mit hov" role="menuitem"><span class="mi s16" aria-hidden="true">note_add</span>New page here</div>
+<div class="mit" role="menuitem"><span class="mi s16" aria-hidden="true">create_new_folder</span>New folder here</div>
+<div class="msep"></div>
+<div class="mit" role="menuitem"><span class="mi s16" aria-hidden="true">edit</span>Rename<span class="k">F2</span></div>
+<div class="mit" role="menuitem"><span class="mi s16" aria-hidden="true">drive_file_move</span>Move to…</div>
+<div class="msep"></div>
+<div class="mit dan" role="menuitem"><span class="mi s16" aria-hidden="true">delete</span>Delete<span class="k">Del</span></div>
+</div>
+</section>
+</div>
+
+<div class="col" style="gap:10px">
+<p class="cap" style="margin:0">Drag a page onto a folder (valid)</p>
+<section class="pane" style="height:560px;border:1px solid var(--bd);border-radius:8px;position:relative" aria-label="Explorer">
+<div class="ph"><span class="pt">Explorer</span><span class="grow"></span><button class="btn sm i" aria-label="New page"><span class="mi s16" aria-hidden="true">note_add</span></button><button class="btn sm i" aria-label="New folder"><span class="mi s16" aria-hidden="true">create_new_folder</span></button><button class="btn sm i" aria-label="Refresh"><span class="mi s16" aria-hidden="true">refresh</span></button><button class="btn sm i" aria-label="Collapse all"><span class="mi s16" aria-hidden="true">unfold_less</span></button></div>
+<div style="padding:8px 8px 4px"><div class="search"><span class="mi s16" aria-hidden="true">search</span><input class="in" placeholder="Search pages" aria-label="Search pages"></div></div>
+<div class="tree">
+<div class="tr" style="--d:0"><span class="mi chev" aria-hidden="true">expand_more</span><span class="mi" aria-hidden="true">folder_open</span><span class="ell">Getting Started</span></div>
+<div class="tr" style="--d:1"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Install</span></div>
+<div class="tr" style="--d:1"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Linking Pages</span></div>
+<div class="tr dragging" style="--d:1"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Using Chat</span></div>
+<div class="tr" style="--d:0"><span class="mi chev" aria-hidden="true">expand_more</span><span class="mi" aria-hidden="true">folder_open</span><span class="ell">Projects</span></div>
+<div class="tr drop" style="--d:1"><span class="mi chev" aria-hidden="true">chevron_right</span><span class="mi" aria-hidden="true">folder</span><span class="ell grow">Alpha</span><span class="mi s16" aria-hidden="true">drive_file_move</span></div>
+<div class="tr" style="--d:0"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Welcome</span></div>
+</div>
+<div class="ghost" style="left:96px;top:250px"><span class="mi s16" aria-hidden="true">description</span>Using Chat</div>
+<div class="tip" style="left:96px;top:286px">Move to Projects/Alpha</div>
+</section>
+</div>
+
+<div class="col" style="gap:10px">
+<p class="cap" style="margin:0">Invalid drop (folder into itself)</p>
+<section class="pane" style="height:560px;border:1px solid var(--bd);border-radius:8px;position:relative" aria-label="Explorer">
+<div class="ph"><span class="pt">Explorer</span><span class="grow"></span><button class="btn sm i" aria-label="New page"><span class="mi s16" aria-hidden="true">note_add</span></button><button class="btn sm i" aria-label="New folder"><span class="mi s16" aria-hidden="true">create_new_folder</span></button><button class="btn sm i" aria-label="Refresh"><span class="mi s16" aria-hidden="true">refresh</span></button><button class="btn sm i" aria-label="Collapse all"><span class="mi s16" aria-hidden="true">unfold_less</span></button></div>
+<div style="padding:8px 8px 4px"><div class="search"><span class="mi s16" aria-hidden="true">search</span><input class="in" placeholder="Search pages" aria-label="Search pages"></div></div>
+<div class="tree">
+<div class="tr" style="--d:0"><span class="mi chev" aria-hidden="true">chevron_right</span><span class="mi" aria-hidden="true">folder</span><span class="ell">Getting Started</span></div>
+<div class="tr dragging" style="--d:0"><span class="mi chev" aria-hidden="true">expand_more</span><span class="mi" aria-hidden="true">folder_open</span><span class="ell">Projects</span></div>
+<div class="tr nodrop" style="--d:1"><span class="mi chev" aria-hidden="true">expand_more</span><span class="mi" aria-hidden="true">folder_open</span><span class="ell grow">Alpha</span><span class="mi s16" aria-hidden="true">block</span></div>
+<div class="tr" style="--d:2"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Overview</span></div>
+<div class="tr" style="--d:0"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Welcome</span></div>
+</div>
+<div class="ghost no" style="left:110px;top:150px;cursor:not-allowed"><span class="mi s16 td" aria-hidden="true">block</span><span class="mi s16" aria-hidden="true">folder</span>Projects</div>
+<div class="tip" style="left:110px;top:186px">Can't move a folder into itself</div>
+</section>
+</div>
+
+<div class="col" style="gap:10px">
+<p class="cap" style="margin:0">Search results (keyword across title, alias, tag, path, body)</p>
+<section class="pane" style="height:560px;border:1px solid var(--bd);border-radius:8px;position:relative" aria-label="Explorer">
+<div class="ph"><span class="pt">Explorer</span><span class="grow"></span><button class="btn sm i" aria-label="New page"><span class="mi s16" aria-hidden="true">note_add</span></button><button class="btn sm i" aria-label="New folder"><span class="mi s16" aria-hidden="true">create_new_folder</span></button><button class="btn sm i" aria-label="Refresh"><span class="mi s16" aria-hidden="true">refresh</span></button><button class="btn sm i" aria-label="Collapse all"><span class="mi s16" aria-hidden="true">unfold_less</span></button></div>
+<div style="padding:8px 8px 4px"><div class="search"><span class="mi s16" aria-hidden="true">search</span><input class="in fr" value="install" aria-label="Search pages"><button class="btn sm i" aria-label="Clear search (Esc)" style="position:absolute;right:3px;top:3px"><span class="mi s16" aria-hidden="true">close</span></button></div></div>
+<div class="xs t3" style="padding:4px 14px 6px" role="status">3 results for “install”</div>
+<div style="padding:0 6px;display:flex;flex-direction:column;gap:2px" role="listbox" aria-label="Search results">
+<div class="sr hov" role="option" aria-selected="true">
+<div class="row" style="gap:6px"><span class="mi s16 t2" aria-hidden="true">description</span><span class="b"><mark>Install</mark></span></div>
+<div class="mono t3" style="font-size:11px">Getting Started/<mark>Install</mark>.md</div>
+<div class="sm t2">…you need the .NET SDK. Download it, then <mark>install</mark> the app and pick a folder to use as the knowledge root. The first run creates a Welcome page so you…</div>
+</div>
+<div class="sr" role="option">
+<div class="row" style="gap:6px"><span class="mi s16 t2" aria-hidden="true">description</span><span class="b">Welcome</span><span class="bdg b-ne" style="height:18px">tag: start</span></div>
+<div class="mono t3" style="font-size:11px">Welcome.md</div>
+<div class="sm t2">…every page is a Markdown file in this folder. New here? Read [[Getting Started/<mark>Install</mark>]] first, then learn how links connect pages…</div>
+</div>
+<div class="sr" role="option">
+<div class="row" style="gap:6px"><span class="mi s16 t2" aria-hidden="true">description</span><span class="b">Using Chat</span><span class="bdg b-ne" style="height:18px">alias: Chat</span></div>
+<div class="mono t3" style="font-size:11px">Getting Started/Using Chat.md</div>
+<div class="sm t2">…ask in plain words, for example “how do I <mark>install</mark> it?”, and the assistant searches your pages and cites what it read…</div>
+</div>
+</div>
+</section>
+</div>
+
+</div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2760,"height":772}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { themes: [{ cls: 'light', name: 'Light' }, { cls: 'dark', name: 'Dark' }] };
+  }
+}
+</script>
+</body>
+</html>

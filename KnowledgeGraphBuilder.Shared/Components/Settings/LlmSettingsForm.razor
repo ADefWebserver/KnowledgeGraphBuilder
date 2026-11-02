@@ -1,0 +1,185 @@
+@implements IDisposable
+@inject IAppSettingsService Settings
+@inject NotificationService Notify
+@inject IHostCapabilities Host
+
+<RadzenCard Variant="Variant.Outlined">
+    <h2 class="kgb-card-h"><span class="mi" aria-hidden="true">smart_toy</span>AI provider</h2>
+    @if (current is null)
+    {
+        <div class="kgb-sk" style="width:60%"></div>
+    }
+    else
+    {
+        <div class="kgb-fgrid">
+            <div>
+                <label class="kgb-lbl" for="kgb-provider">Provider</label>
+                <RadzenDropDown id="kgb-provider" TValue="LlmProvider" Data="@providers" TextProperty="Text" ValueProperty="Value"
+                                Value="@provider" ValueChanged="@OnProviderChanged" Style="width:100%" />
+            </div>
+            <div>
+                <label class="kgb-lbl" for="kgb-model">@(provider == LlmProvider.AzureOpenAI ? "Deployment" : "Model")</label>
+                <RadzenTextBox id="kgb-model" Value="@model" @oninput="@(e => model = e.Value?.ToString() ?? "")" Style="width:100%" class="mono" />
+            </div>
+            @if (LlmDefaults.RequiresEndpoint(provider))
+            {
+                <div style="grid-column:1 / -1">
+                    <label class="kgb-lbl" for="kgb-endpoint">Endpoint</label>
+                    <RadzenTextBox id="kgb-endpoint" Value="@endpoint" @oninput="@(e => endpoint = e.Value?.ToString() ?? "")" Style="width:100%" class="mono"
+                                   Placeholder="@(provider == LlmProvider.Ollama ? "http://localhost:11434/" : "https://<resource>.openai.azure.com/")" />
+                    @if (provider == LlmProvider.Ollama && Host.IsBrowser)
+                    {
+                        <div class="kgb-help"><span class="mi s16" aria-hidden="true">info</span>The Ollama host must allow this page's origin: set OLLAMA_ORIGINS on the machine running Ollama.</div>
+                    }
+                </div>
+            }
+            @if (LlmDefaults.RequiresKey(provider))
+            {
+                <div style="grid-column:1 / -1">
+                    <label class="kgb-lbl" for="kgb-key">API key</label>
+                    @if (current.ApiKeyConfigured && !replacing)
+                    {
+                        <div class="row">
+                            <span class="bdg b-su"><span class="mi" aria-hidden="true">check</span>Configured</span>
+                            <RadzenButton Text="Replace" Size="ButtonSize.Small" Variant="Variant.Outlined" ButtonStyle="ButtonStyle.Base" Click="@(() => replacing = true)" />
+                            <RadzenButton Text="Clear key" Size="ButtonSize.Small" Variant="Variant.Text" ButtonStyle="ButtonStyle.Danger" Click="@ClearKeyAsync" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row">
+                            @if (!current.ApiKeyConfigured) { <span class="bdg b-ne"><span class="mi" aria-hidden="true">key_off</span>Not set</span> }
+                            <RadzenPassword id="kgb-key" Value="@newKey" @oninput="@(e => newKey = e.Value?.ToString() ?? "")" Style="flex:1" AutoComplete="false" Placeholder="Paste the key" />
+                            @if (replacing) { <RadzenButton Text="Cancel" Size="ButtonSize.Small" Variant="Variant.Text" Click="@(() => { replacing = false; newKey = ""; })" /> }
+                        </div>
+                    }
+                    <div class="kgb-help"><span class="mi s16" aria-hidden="true">lock</span>
+                        @if (Host.IsBrowser)
+                        {
+                            <span>The API key is stored unencrypted in this browser and is sent only to <b class="mono">@(LlmDefaults.HostFor(provider, endpoint) ?? "the provider")</b>. Any script or extension with access to this page can read it, so use a key with a spending limit, and clear it on shared computers.</span>
+                        }
+                        else
+                        {
+                            <span>The key is kept in Windows secure storage and sent only to <b class="mono">@(LlmDefaults.HostFor(provider, endpoint) ?? "the provider")</b>. It is never shown again.</span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (error is not null)
+        {
+            <div class="kgb-err" role="alert"><span class="mi s16" aria-hidden="true">error</span>@error</div>
+        }
+        @if (testResult is not null)
+        {
+            <div class="kgb-callout @(testOk ? "su" : "da")" role="status" style="margin-top:10px">
+                <span class="mi" aria-hidden="true">@(testOk ? "check_circle" : "error")</span><div>@testResult</div>
+            </div>
+        }
+
+        <div class="kgb-callout ne" style="margin-top:12px">
+            <span class="mi" aria-hidden="true">privacy_tip</span>
+            <div>Page text the assistant reads is sent to the selected provider. Ollama keeps everything on the machine that runs it.</div>
+        </div>
+
+        <div class="row" style="justify-content:flex-end;margin-top:12px">
+            <RadzenButton Text="Test connection" Icon="network_check" Variant="Variant.Outlined" ButtonStyle="ButtonStyle.Base" Click="@TestAsync" IsBusy="@testing" BusyText="Testing…" />
+            <RadzenButton Text="Save" Icon="save" ButtonStyle="ButtonStyle.Primary" Click="@SaveAsync" Disabled="@(!Dirty)" IsBusy="@saving" />
+        </div>
+    }
+</RadzenCard>
+
+@code {
+    sealed record Option(string Text, LlmProvider Value);
+
+    readonly List<Option> providers = LlmDefaults.Available().Select(p => new Option(LlmDefaults.DisplayName(p), p)).ToList();
+
+    AppSettings? current;
+    LlmProvider provider;
+    string model = "";
+    string endpoint = "";
+    string newKey = "";
+    bool replacing;
+    bool saving;
+    bool testing;
+    bool testOk;
+    string? testResult;
+    string? error;
+
+    bool Dirty => current is not null && (provider != current.Provider || model != current.Model || (endpoint ?? "") != (current.Endpoint ?? "") || newKey.Length > 0);
+
+    protected override async Task OnInitializedAsync()
+    {
+        Settings.Changed += OnChanged;
+        await LoadAsync();
+    }
+
+    async Task LoadAsync()
+    {
+        current = await Settings.GetAsync();
+        provider = current.Provider;
+        model = current.Model;
+        endpoint = current.Endpoint ?? "";
+    }
+
+    void OnChanged() => _ = InvokeAsync(async () =>
+    {
+        if (!Dirty) await LoadAsync();
+        else current = await Settings.GetAsync();
+        StateHasChanged();
+    });
+
+    void OnProviderChanged(LlmProvider value)
+    {
+        if (value == provider) return;
+        if (model == LlmDefaults.DefaultModel(provider) || string.IsNullOrWhiteSpace(model)) model = LlmDefaults.DefaultModel(value);
+        provider = value;
+        error = null;
+        testResult = null;
+    }
+
+    async Task SaveAsync()
+    {
+        error = null;
+        saving = true;
+        try
+        {
+            await Settings.SaveAsync(provider, model, endpoint, newKey.Length > 0 ? newKey : null);
+            newKey = "";
+            replacing = false;
+            current = await Settings.GetAsync();
+            Notify.Notify(NotificationSeverity.Success, "Settings saved", "", TimeSpan.FromSeconds(3));
+        }
+        catch (ArgumentException ex) { error = ex.Message; }
+        catch (StorageQuotaExceededException) { error = "Browser storage is full, so the settings weren't saved. Export a backup and delete pages you don't need."; }
+        catch (Exception ex) { error = ex.Message; }
+        finally { saving = false; }
+    }
+
+    async Task ClearKeyAsync()
+    {
+        await Settings.ClearApiKeyAsync();
+        current = await Settings.GetAsync();
+        testResult = null;
+        Notify.Notify(NotificationSeverity.Info, "API key cleared", "", TimeSpan.FromSeconds(3));
+    }
+
+    async Task TestAsync()
+    {
+        if (Dirty) await SaveAsync();
+        if (error is not null) return;
+        testing = true;
+        testResult = null;
+        try
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            var result = await Settings.TestConnectionAsync(cts.Token);
+            testOk = result is null;
+            testResult = result ?? $"Connected to {LlmDefaults.DisplayName(provider)} ({model}).";
+        }
+        finally { testing = false; }
+    }
+
+    public void Dispose() => Settings.Changed -= OnChanged;
+}

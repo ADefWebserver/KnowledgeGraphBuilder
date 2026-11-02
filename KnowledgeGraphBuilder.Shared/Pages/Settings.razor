@@ -1,0 +1,81 @@
+@page "/settings"
+@inject IHostCapabilities Host
+@inject IKnowledgeGraphIndex Graph
+@inject NotificationService Notify
+
+<PageTitle>Settings · Knowledge Graph Builder</PageTitle>
+
+<div class="kgb-settings">
+    <div class="kgb-settings-stack">
+        <h1 style="font-weight:500;font-size:20px;margin:0">Settings</h1>
+
+        <RadzenCard Variant="Variant.Outlined">
+            <h2 class="kgb-card-h"><span class="mi" aria-hidden="true">@(Host.IsBrowser ? "public" : "folder")</span>Knowledge root</h2>
+            @if (Host.IsBrowser)
+            {
+                <div class="kgb-kv"><span class="mi s16" aria-hidden="true">storage</span>Browser storage</div>
+                <div class="kgb-help">Pages are kept in this browser's local storage for this site. Each browser and profile has its own pages.</div>
+            }
+            else
+            {
+                <div class="row">
+                    <div class="kgb-kv grow mono" title="@Host.RootPath">@Host.RootPath</div>
+                    @if (Host.CanOpenFolder)
+                    {
+                        <RadzenButton Text="Open folder" Icon="folder_open" Variant="Variant.Outlined" ButtonStyle="ButtonStyle.Base" Click="@Host.OpenRootFolder" />
+                    }
+                </div>
+                <div class="kgb-help">Pages are plain .md files in this folder. You can edit them with other tools; the app checks for changes when you save.</div>
+            }
+        </RadzenCard>
+
+        @if (Host.HasBackup)
+        {
+            <BackupPanel />
+        }
+
+        <LlmSettingsForm />
+
+        <RadzenCard Variant="Variant.Outlined">
+            <h2 class="kgb-card-h"><span class="mi" aria-hidden="true">hub</span>Graph</h2>
+            <div class="row" style="align-items:stretch">
+                <div class="kgb-stat"><span class="xs t3">Pages</span><b>@(stats?.Pages.ToString() ?? "–")</b></div>
+                <div class="kgb-stat"><span class="xs t3">Links</span><b>@(stats?.Links.ToString() ?? "–")</b></div>
+                <div class="kgb-stat"><span class="xs t3">Unresolved</span><b>@(stats?.Unresolved.ToString() ?? "–")</b></div>
+            </div>
+            <div class="row" style="margin-top:12px">
+                <span class="grow xs t3">@rebuildNote</span>
+                <RadzenButton Text="Rebuild graph" Icon="refresh" Variant="Variant.Outlined" ButtonStyle="ButtonStyle.Base" Click="@RebuildAsync" IsBusy="@rebuilding" BusyText="Rebuilding…" />
+            </div>
+        </RadzenCard>
+
+        @if (Host.CanToggleTheme)
+        {
+            <RadzenCard Variant="Variant.Outlined">
+                <h2 class="kgb-card-h"><span class="mi" aria-hidden="true">contrast</span>Appearance</h2>
+                <div class="row"><span class="grow">Light or dark theme</span><RadzenAppearanceToggle LightTheme="material" DarkTheme="material-dark" /></div>
+            </RadzenCard>
+        }
+    </div>
+</div>
+
+@code {
+    GraphStats? stats;
+    bool rebuilding;
+    string? rebuildNote;
+
+    protected override async Task OnInitializedAsync() => stats = await Graph.GetStatsAsync();
+
+    async Task RebuildAsync()
+    {
+        rebuilding = true;
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        try
+        {
+            stats = await Graph.RebuildAsync();
+            rebuildNote = $"Rebuilt in {sw.ElapsedMilliseconds} ms.";
+        }
+        catch (Exception ex) { Notify.Notify(NotificationSeverity.Error, "Rebuild failed", ex.Message); }
+        finally { rebuilding = false; }
+    }
+}

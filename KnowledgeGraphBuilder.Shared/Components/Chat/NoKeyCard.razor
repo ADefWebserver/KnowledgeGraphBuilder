@@ -1,0 +1,12 @@
+<div class="kgb-callout in" role="status">
+    <span class="mi" aria-hidden="true">key</span>
+    <div class="grow">
+        <div style="font-weight:500">Configure an API key in Settings</div>
+        <div class="xs t2">@Reason. Chat stays off until a provider is set up; the rest of the app works without it.</div>
+    </div>
+    <RadzenLink Path="settings" Text="Open Settings" />
+</div>
+
+@code {
+    [Parameter] public string Reason { get; set; } = "Add an API key in Settings";
+}

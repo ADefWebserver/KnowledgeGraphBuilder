@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Notifications and system states</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./kgb.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&amp;display=block">
+<style>
+body{margin:0}
+a{color:#4340d2}a:hover{color:#2f2ca6}
+</style>
+</helmet>
+<div class="board" style="width:3080px;height:1340px">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div>
+<p class="tl">{{t.name}}</p>
+<div class="sheet {{t.cls}}" style="width:1460px;height:1228px;display:flex;flex-direction:column;gap:32px">
+<div style="display:grid;grid-template-columns:360px 400px minmax(0,1fr);gap:28px;align-items:start">
+
+<div class="col" style="gap:10px">
+<p class="cap" style="margin:0">Toasts (RadzenNotification, top right)</p>
+<div class="toast" role="status"><span class="ti su"><span class="mi s16" aria-hidden="true">check</span></span><div class="grow"><div class="b">Saved</div><div class="sm t2">Getting Started/Linking Pages.md</div></div><button class="btn sm i" aria-label="Dismiss"><span class="mi s16" aria-hidden="true">close</span></button></div>
+<div class="toast" role="status"><span class="ti su"><span class="mi s16" aria-hidden="true">drive_file_rename_outline</span></span><div class="grow"><div class="b">Renamed. 4 pages updated.</div><div class="sm t2">Install → Installation</div></div><button class="btn sm i" aria-label="Dismiss"><span class="mi s16" aria-hidden="true">close</span></button></div>
+<div class="toast" role="status"><span class="ti in"><span class="mi s16" aria-hidden="true">delete</span></span><div class="grow"><div class="b">Deleted</div><div class="sm t2">Roadmap.md moved to the Recycle Bin.</div></div><button class="btn sm i" aria-label="Dismiss"><span class="mi s16" aria-hidden="true">close</span></button></div>
+<div class="toast" role="alert"><span class="ti da"><span class="mi s16" aria-hidden="true">lock</span></span><div class="grow"><div class="b">Couldn't save Overview.md</div><div class="sm t2">The file is locked by another program.</div><button class="btn sm o" style="margin-top:6px"><span class="mi s16" aria-hidden="true">refresh</span>Retry</button></div><button class="btn sm i" aria-label="Dismiss"><span class="mi s16" aria-hidden="true">close</span></button></div>
+<div class="toast" role="alert"><span class="ti wa"><span class="mi s16" aria-hidden="true">data_alert</span></span><div class="grow"><div class="b">Page too large</div><div class="sm t2">Notes.md is over 1 MB, so it opens read-only and the assistant skips it.</div></div><button class="btn sm i" aria-label="Dismiss"><span class="mi s16" aria-hidden="true">close</span></button></div>
+<div class="toast" role="alert"><span class="ti da"><span class="mi s16" aria-hidden="true">block</span></span><div class="grow"><div class="b">Request blocked</div><div class="sm t2">The app refused a path outside the knowledge root.</div></div><button class="btn sm i" aria-label="Dismiss"><span class="mi s16" aria-hidden="true">close</span></button></div>
+<div class="toast" role="status"><span class="ti in"><span class="mi s16" aria-hidden="true">history_toggle_off</span></span><div class="grow"><div class="b">Conversation expired</div><div class="sm t2">The chat was reset. Your pages are unchanged.</div></div><button class="btn sm i" aria-label="Dismiss"><span class="mi s16" aria-hidden="true">close</span></button></div>
+</div>
+
+<div class="col" style="gap:10px">
+<p class="cap" style="margin:0">Chat · inline errors and no API key</p>
+<aside class="pane" style="border:1px solid var(--bd);border-radius:8px;overflow:hidden" aria-label="Chat">
+<div class="ph"><span class="pt">Chat</span><span class="chip" style="margin-left:6px"><span class="mi s14" aria-hidden="true">smart_toy</span>Anthropic · claude-sonnet-5-5</span></div>
+<div class="msgs" style="flex:none">
+<div class="mu"><div class="who">You</div>Summarize the Alpha project.</div>
+<div class="callout da" role="alert"><span class="mi s16" aria-hidden="true">error</span><div class="grow"><b>The provider is overloaded.</b> No answer was received. This usually clears in a minute.<div class="row" style="margin-top:6px"><button class="btn sm o"><span class="mi s16" aria-hidden="true">refresh</span>Retry</button><span class="xs t3 mono">HTTP 529</span></div></div></div>
+<div class="mu"><div class="who">You</div>Try again with all pages.</div>
+<div class="callout wa" role="alert"><span class="mi s16" aria-hidden="true">warning</span><div><b>That request is too large.</b> Ask about fewer pages, or start a new chat to clear earlier context.</div></div>
+<div class="row xs t3" style="justify-content:center;gap:6px;padding:4px 0"><span class="mi s14" aria-hidden="true">history_toggle_off</span>Conversation expired and was reset</div>
+</div>
+<div style="padding:0 12px 12px">
+<div class="card" style="padding:14px;gap:8px;background:var(--sur)">
+<div class="row b"><span class="mi s20 td" aria-hidden="true">key_off</span>Configure an API key in Settings</div>
+<p class="sm t2" style="margin:0">The assistant needs a key for the selected provider (Anthropic). You can still browse and edit pages.</p>
+<a class="btn p sm" style="align-self:flex-start" href="#settings"><span class="mi s16" aria-hidden="true">settings</span>Open Settings</a>
+</div>
+</div>
+<div class="comp"><textarea class="ta" disabled aria-label="Message" placeholder="Add an API key to start chatting"></textarea></div>
+</aside>
+</div>
+
+<div class="col" style="gap:10px">
+<p class="cap" style="margin:0">Settings · field and progress states</p>
+<div class="card">
+<label class="lbl" for="r1" style="margin:0">Knowledge root · drive root refused</label>
+<div class="row"><input id="r1" class="in mono inv grow" value="C:\" aria-invalid="true" aria-describedby="r1e"><button class="btn o">Browse…</button><button class="btn p" disabled>Apply</button></div>
+<div class="err" id="r1e" style="margin:0"><span class="mi s16" aria-hidden="true">error</span>Choose a folder, not a drive root like C:\.</div>
+</div>
+<div class="card">
+<label class="lbl" for="r2" style="margin:0">Knowledge root · large folder warning</label>
+<div class="row"><input id="r2" class="in mono grow" value="D:\Archive\research" aria-describedby="r2w"><button class="btn o">Browse…</button><button class="btn p">Apply</button></div>
+<div class="wrn" id="r2w" style="margin:0"><span class="mi s16" aria-hidden="true">warning</span>This folder has 14,210 pages. Above 10,000, indexing and search get slower. You can still apply it.</div>
+</div>
+<div class="card">
+<span class="lbl" style="margin:0">AI provider · Azure OpenAI (endpoint shown, key not set)</span>
+<div class="fgrid">
+<div><label class="lbl" for="p2">Provider</label><button id="p2" class="in dd"><span>Azure OpenAI</span><span class="mi t3" aria-hidden="true">expand_more</span></button></div>
+<div><label class="lbl" for="m2">Deployment / model</label><input id="m2" class="in mono" value="[DEPLOYMENT]"></div>
+<div style="grid-column:1 / -1"><label class="lbl" for="ep">Endpoint</label><input id="ep" class="in mono" value="https://[RESOURCE].openai.azure.com/"></div>
+<div style="grid-column:1 / -1"><span class="lbl">API key</span><div class="row"><div class="kv grow" style="border-style:solid;background:var(--panel)"><span class="bdg b-da"><span class="mi" aria-hidden="true">key_off</span>Not set</span><span class="sm t3">Chat is unavailable until a key is set.</span></div><button class="btn p"><span class="mi s16" aria-hidden="true">key</span>Set key…</button></div></div>
+</div>
+</div>
+<div class="card">
+<span class="lbl" style="margin:0">Graph · rebuilding</span>
+<div class="row"><button class="btn o" disabled><span class="spin" aria-hidden="true"></span>Rebuilding…</button><div class="col grow" style="gap:4px"><span class="sm t2">Reading pages: 3,120 of 5,400</span><span class="pbar wide" role="progressbar" aria-valuenow="58" aria-valuemax="100" aria-label="Rebuild progress"><i style="width:58%"></i></span></div></div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;gap:28px;align-items:flex-start">
+<div class="col" style="gap:10px">
+<p class="cap" style="margin:0">Loading skeletons · tree, editor, chat</p>
+<div class="kgb" style="width:900px;height:330px" aria-busy="true" aria-label="Loading">
+<div class="split">
+<div class="pane" style="width:220px;flex:none;padding:14px 12px;gap:12px">
+<div class="sk" style="width:60%;height:12px"></div>
+<div class="sk" style="height:28px;border-radius:4px"></div>
+<div class="sk" style="width:80%"></div><div class="sk" style="width:62%;margin-left:16px"></div><div class="sk" style="width:70%;margin-left:16px"></div><div class="sk" style="width:55%;margin-left:16px"></div><div class="sk" style="width:74%"></div><div class="sk" style="width:48%;margin-left:16px"></div><div class="sk" style="width:66%"></div>
+</div>
+<div class="gut" aria-hidden="true"></div>
+<div class="pane grow" style="padding:14px 16px;gap:12px">
+<div class="sk" style="width:40%;height:16px"></div><div class="sk" style="width:28%;height:8px"></div>
+<div class="sk" style="height:62px;border-radius:6px"></div>
+<div class="sk" style="width:55%;height:18px;margin-top:6px"></div><div class="sk" style="width:96%"></div><div class="sk" style="width:90%"></div><div class="sk" style="width:72%"></div><div class="sk" style="width:84%"></div>
+</div>
+<div class="gut" aria-hidden="true"></div>
+<div class="pane" style="width:260px;flex:none;padding:14px 12px;gap:12px">
+<div class="sk" style="width:70%;height:12px"></div>
+<div class="sk" style="width:60%;height:34px;align-self:flex-end;border-radius:10px"></div>
+<div class="sk" style="width:90%"></div><div class="sk" style="width:80%"></div><div class="sk" style="width:50%"></div>
+<div class="sk" style="height:56px;margin-top:auto;border-radius:6px"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="col" style="gap:10px">
+<p class="cap" style="margin:0">Not Found page</p>
+<div class="kgb" style="width:484px;height:330px">
+<header class="hdr"><span class="logo"><span class="mi s16" aria-hidden="true">hub</span></span><span class="appn">Knowledge Graph Builder</span><span class="grow"></span><a class="nav" href="#settings"><span class="mi s16" aria-hidden="true">settings</span>Settings</a></header>
+<div class="empty">
+<div class="eic"><span class="mi s24" aria-hidden="true">explore_off</span></div>
+<h1 style="margin:0;font-weight:500;font-size:18px;color:var(--tx)">Page not found</h1>
+<p class="sm" style="margin:0">There's nothing at this address. Pages live in the Workspace.</p>
+<a class="btn p" href="#workspace"><span class="mi s16" aria-hidden="true">arrow_back</span>Back to Workspace</a>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":3080,"height":1340}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { themes: [{ cls: 'light', name: 'Light' }, { cls: 'dark', name: 'Dark' }] };
+  }
+}
+</script>
+</body>
+</html>

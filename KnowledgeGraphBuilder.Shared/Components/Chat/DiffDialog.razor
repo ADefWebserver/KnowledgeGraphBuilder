@@ -1,0 +1,24 @@
+@inject DialogService Dialogs
+
+<div style="display:flex;flex-direction:column;gap:10px;height:100%">
+    <div style="flex:1;min-height:0;overflow:auto;border:1px solid var(--bd);border-radius:6px">
+        <DiffView OldText="@OldText" NewText="@NewText" Wide="true" NewPageLines="100000" />
+    </div>
+    <div class="row" style="justify-content:flex-end">
+        @if (CanDecide)
+        {
+            <RadzenButton Text="Reject" Variant="Variant.Outlined" ButtonStyle="ButtonStyle.Base" Click="@(() => Dialogs.Close("reject"))" />
+            <RadzenButton Text="Apply" Icon="check" ButtonStyle="ButtonStyle.Primary" Click="@(() => Dialogs.Close("apply"))" />
+        }
+        else
+        {
+            <RadzenButton Text="Close" ButtonStyle="ButtonStyle.Primary" Click="@(() => Dialogs.Close(null))" />
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public string? OldText { get; set; }
+    [Parameter] public string NewText { get; set; } = "";
+    [Parameter] public bool CanDecide { get; set; }
+}

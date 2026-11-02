@@ -1,0 +1,131 @@
+@inject DialogService Dialogs
+
+<article class="kgb-ac" aria-label="@($"{Item.Action} {Item.Proposal.Path}")">
+    <div class="kgb-ach">
+        <span class="bdg @(Item.Proposal.Tool == "update_page" ? "b-in" : "b-pr")">
+            <span class="mi" aria-hidden="true">@(Item.Proposal.Tool switch { "create_folder" => "create_new_folder", "update_page" => "edit_document", _ => "note_add" })</span>@Item.Action
+        </span>
+        <span class="kgb-acp ell grow" title="@Item.Proposal.Path">@Item.Proposal.Path</span>
+        <span class="bdg @StateCss"><span class="mi" aria-hidden="true">@StateIcon</span>@StateText</span>
+        @if (Item.Proposal.Tool != "create_folder")
+        {
+            <RadzenButton Icon="open_in_full" Variant="Variant.Text" ButtonStyle="ButtonStyle.Base" Size="ButtonSize.ExtraSmall" title="Full-screen diff" aria-label="Full-screen diff" Click="@OpenFullScreenAsync" />
+        }
+    </div>
+    @if (Item.Proposal.Tool == "create_folder")
+    {
+        <div class="kgb-acmsg"><span class="mi s16" aria-hidden="true">folder</span>A new folder <span class="mono">@Item.Proposal.Path</span> will be created.</div>
+    }
+    else
+    {
+        <div class="kgb-acm">
+            @if (Item.Proposal.OldMarkdown is null) { <span>New page</span> }
+            else if (Item.Proposal.Tool == "create_page") { <span class="tw"><span class="mi s14" aria-hidden="true">warning</span> A page already exists at this path; creating it will fail.</span> }
+            else { <span>@Added added, @Removed removed</span> }
+        </div>
+        <div style="max-height:260px;overflow:auto">
+            <DiffView OldText="@Item.Proposal.OldMarkdown" NewText="@Item.Proposal.NewMarkdown" />
+        </div>
+    }
+    @if (Item.State == CardState.NotApplied && Item.Error is not null)
+    {
+        <div class="kgb-acmsg tw"><span class="mi s16" aria-hidden="true">warning</span>@ErrorText</div>
+    }
+    <div class="kgb-acf">
+        @switch (Item.State)
+        {
+            case CardState.Pending:
+                <span class="grow xs t3">Nothing is written until you apply.</span>
+                <RadzenButton Text="Reject" Variant="Variant.Outlined" ButtonStyle="ButtonStyle.Base" Size="ButtonSize.Small" Disabled="@Disabled" Click="@(() => OnDecide.InvokeAsync(false))" />
+                <RadzenButton Text="Apply" Icon="check" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Disabled="@Disabled" Click="@(() => OnDecide.InvokeAsync(true))" />
+                break;
+            case CardState.Approved:
+                <span class="grow xs t2">@(Item.Submitted ? "Applying…" : WaitingText)</span>
+                @if (!Item.Submitted)
+                {
+                    <RadzenButton Text="Undo" Variant="Variant.Text" Size="ButtonSize.Small" Click="@(() => OnUndo.InvokeAsync())" />
+                }
+                break;
+            case CardState.Applied:
+                <span class="grow xs ts">Applied.</span>
+                @if (Item.Proposal.Tool != "create_folder")
+                {
+                    <RadzenLink Path="@SafeMarkdown.PageHref(Item.Proposal.Path)" Text="Open page" />
+                }
+                break;
+            case CardState.NotApplied:
+                <span class="grow"></span>
+                @if (Item.Proposal.Tool != "create_folder")
+                {
+                    <RadzenLink Path="@SafeMarkdown.PageHref(Item.Proposal.Path)" Text="Open current page" />
+                    <RadzenButton Text="Ask again" Variant="Variant.Outlined" ButtonStyle="ButtonStyle.Base" Size="ButtonSize.Small" Click="@(() => OnAskAgain.InvokeAsync())" />
+                }
+                break;
+            case CardState.Rejected:
+                <span class="grow xs t3">@(Item.Submitted ? "Rejected. Nothing was written." : WaitingText)</span>
+                @if (!Item.Submitted)
+                {
+                    <RadzenButton Text="Undo" Variant="Variant.Text" Size="ButtonSize.Small" Click="@(() => OnUndo.InvokeAsync())" />
+                }
+                break;
+            case CardState.Cancelled:
+                <span class="grow xs t3">Cancelled. Nothing was written.</span>
+                break;
+            case CardState.Superseded:
+                <span class="grow xs t3">Skipped because you sent a new message.</span>
+                break;
+        }
+    </div>
+</article>
+
+@code {
+    [Parameter, EditorRequired] public ApprovalItem Item { get; set; } = default!;
+    [Parameter] public int Undecided { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public EventCallback<bool> OnDecide { get; set; }
+    [Parameter] public EventCallback OnUndo { get; set; }
+    [Parameter] public EventCallback OnAskAgain { get; set; }
+
+    List<DiffView.Line>? stats;
+
+    int Added => (stats ??= DiffView.Build(Item.Proposal.OldMarkdown, Item.Proposal.NewMarkdown)).Count(l => l.Css == "add");
+    int Removed => (stats ??= DiffView.Build(Item.Proposal.OldMarkdown, Item.Proposal.NewMarkdown)).Count(l => l.Css == "rm");
+
+    string WaitingText => Undecided == 1 ? "Waiting for 1 more decision." : $"Waiting for {Undecided} more decisions.";
+
+    string ErrorText => Item.Error switch
+    {
+        "Conflict" => "Not applied: the page changed after this was proposed.",
+        "AlreadyExists" => "Not applied: a page with this name already exists.",
+        "Storage full" => "Not applied: browser storage is full. Export a backup and delete pages you don't need.",
+        var e => "Not applied: " + e,
+    };
+
+    (string Css, string Icon, string Text) Status => Item.State switch
+    {
+        CardState.Pending => ("b-pr", "schedule", "Pending"),
+        CardState.Approved => ("b-su", "check", "Approved"),
+        CardState.Applied => ("b-su", "check_circle", "Applied"),
+        CardState.Rejected => ("b-ne", "block", "Rejected"),
+        CardState.NotApplied => ("b-wa", "warning", "Not applied"),
+        CardState.Cancelled => ("b-ne", "cancel", "Cancelled"),
+        _ => ("b-ne", "redo", "Superseded"),
+    };
+
+    string StateCss => Status.Css;
+    string StateIcon => Status.Icon;
+    string StateText => Status.Text;
+
+    async Task OpenFullScreenAsync()
+    {
+        var pending = Item.State == CardState.Pending && !Disabled;
+        var result = await Dialogs.OpenAsync<DiffDialog>($"{Item.Action}: {Item.Proposal.Path}", new Dictionary<string, object?>
+        {
+            [nameof(DiffDialog.OldText)] = Item.Proposal.OldMarkdown,
+            [nameof(DiffDialog.NewText)] = Item.Proposal.NewMarkdown,
+            [nameof(DiffDialog.CanDecide)] = pending,
+        }, new DialogOptions { Width = "90vw", Height = "85vh", CloseDialogOnEsc = true });
+        if (result is "apply") await OnDecide.InvokeAsync(true);
+        else if (result is "reject") await OnDecide.InvokeAsync(false);
+    }
+}

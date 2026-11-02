@@ -1,0 +1,38 @@
+@inherits LayoutComponentBase
+@implements IDisposable
+@inject ThemeService Theme
+@inject IHostCapabilities Host
+@inject NavigationManager Nav
+
+<RadzenTheme Theme="material" />
+<RadzenComponents />
+
+<div class="kgb-app @(IsDark ? "kgb-dark" : "kgb-light")">
+    <header class="kgb-header">
+        <a class="row" href="./" style="text-decoration:none;gap:10px">
+            <span class="kgb-logo" aria-hidden="true"><span class="mi s16">hub</span></span>
+            <span class="kgb-appname">Knowledge Graph Builder</span>
+        </a>
+        <span class="kgb-rootchip" title="@Host.RootPath"><span class="mi s14" aria-hidden="true">@(Host.IsBrowser ? "public" : "folder")</span>@Host.RootDisplay</span>
+        <span class="grow"></span>
+        <NavLink class="kgb-nav" href="./" Match="NavLinkMatch.All" ActiveClass="active"><span class="mi s16" aria-hidden="true">edit_note</span>Workspace</NavLink>
+        <NavLink class="kgb-nav" href="settings" ActiveClass="active"><span class="mi s16" aria-hidden="true">settings</span>Settings</NavLink>
+        @if (Host.CanToggleTheme)
+        {
+            <RadzenAppearanceToggle LightTheme="material" DarkTheme="material-dark" Variant="Variant.Text" ButtonStyle="ButtonStyle.Base" />
+        }
+    </header>
+    <main class="kgb-workspace">
+        @Body
+    </main>
+</div>
+
+@code {
+    bool IsDark => Theme.Theme?.Contains("dark", StringComparison.OrdinalIgnoreCase) == true;
+
+    protected override void OnInitialized() => Theme.ThemeChanged += OnThemeChanged;
+
+    void OnThemeChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Theme.ThemeChanged -= OnThemeChanged;
+}

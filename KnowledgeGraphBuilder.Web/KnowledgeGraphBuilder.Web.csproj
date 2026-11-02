@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.14" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.14" PrivateAssets="all" />
+    <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\KnowledgeGraphBuilder.Shared\KnowledgeGraphBuilder.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- R14: libraries that rely on reflection are kept whole when trimming. -->
+    <TrimmerRootAssembly Include="YamlDotNet" />
+    <TrimmerRootAssembly Include="Microsoft.Extensions.AI" />
+    <TrimmerRootAssembly Include="Microsoft.Extensions.AI.Abstractions" />
+  </ItemGroup>
+
+</Project>

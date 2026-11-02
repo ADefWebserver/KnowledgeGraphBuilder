@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>First run</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./kgb.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&amp;display=block">
+<style>
+body{margin:0}
+a{color:#4340d2}a:hover{color:#2f2ca6}
+</style>
+</helmet>
+<div class="board" style="width:3040px;height:1012px">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div>
+<p class="tl">{{t.name}}</p>
+<div class="kgb {{t.cls}}" style="width:1440px;height:900px">
+<header class="hdr">
+<span class="logo"><span class="mi s16" aria-hidden="true">hub</span></span>
+<span class="appn">Knowledge Graph Builder</span>
+<span class="rootchip" title="C:\Users\me\Documents\my-notes"><span class="mi s14" aria-hidden="true">folder_open</span>my-notes</span>
+<span class="grow"></span>
+<a class="nav" href="#settings"><span class="mi s16" aria-hidden="true">settings</span>Settings</a>
+<button class="btn i" aria-label="{{t.tl}}"><span class="mi" aria-hidden="true">{{t.ti}}</span></button>
+</header>
+<div class="split">
+<section class="pane" style="width:272px;flex:none" aria-label="Explorer">
+<div class="ph"><span class="pt">Explorer</span><span class="grow"></span>
+<button class="btn sm i" aria-label="New page"><span class="mi s16" aria-hidden="true">note_add</span></button>
+<button class="btn sm i" aria-label="New folder"><span class="mi s16" aria-hidden="true">create_new_folder</span></button>
+<button class="btn sm i" aria-label="Refresh"><span class="mi s16" aria-hidden="true">refresh</span></button>
+<button class="btn sm i" aria-label="Collapse all"><span class="mi s16" aria-hidden="true">unfold_less</span></button>
+</div>
+<div style="padding:8px 8px 4px"><div class="search"><span class="mi s16" aria-hidden="true">search</span><input class="in" placeholder="Search pages" aria-label="Search pages"></div></div>
+<div class="tree" role="tree" aria-label="Pages">
+<div class="tr sel" role="treeitem" aria-selected="true" style="--d:0"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Welcome</span></div>
+</div>
+<p class="xs t3" style="margin:8px 14px">One page so far. Create pages here, or let the assistant propose them.</p>
+</section>
+<div class="gut" aria-hidden="true"></div>
+<main class="pane grow" aria-label="Editor" style="background:var(--bg)">
+<div class="eh" style="background:var(--panel)">
+<div class="col grow" style="gap:1px">
+<h1 class="etitle" style="margin:0">Welcome</h1>
+<nav class="crumb" aria-label="Path"><span>my-notes</span><span class="mi s14" aria-hidden="true">chevron_right</span><span>Welcome.md</span></nav>
+</div>
+<button class="btn tx sm" disabled>Revert</button>
+<button class="btn o sm" disabled><span class="mi s16" aria-hidden="true">save</span>Saved</button>
+<div class="seg" role="radiogroup" aria-label="Editor mode"><button class="on" role="radio" aria-checked="true">Design</button><button role="radio" aria-checked="false">Source</button><button role="radio" aria-checked="false"><span class="mi s16" aria-hidden="true">visibility</span>Preview</button></div>
+</div>
+<div style="padding:10px 12px 0">
+<div class="callout in" role="status"><span class="mi s20" aria-hidden="true">waving_hand</span><div class="grow">Your knowledge root is <span class="mono">C:\Users\me\Documents\my-notes</span>. Every page is a Markdown file there, so you can also edit them in any other editor.</div><button class="btn sm o">Open folder</button><button class="btn sm i" aria-label="Dismiss"><span class="mi s16" aria-hidden="true">close</span></button></div>
+</div>
+<div class="propbox">
+<div class="prophd"><span class="mi s16" aria-hidden="true">expand_more</span>Properties<span class="t3 mono" style="font-weight:400">front-matter</span></div>
+<pre class="yaml"><span class="yk">title</span>: Welcome
+<span class="yk">tags</span>:
+  - start</pre>
+</div>
+<div class="mdtb" role="toolbar" aria-label="Formatting">
+<button class="btn sm i" aria-label="Bold"><span class="mi s16" aria-hidden="true">format_bold</span></button>
+<button class="btn sm i" aria-label="Italic"><span class="mi s16" aria-hidden="true">format_italic</span></button>
+<button class="btn sm i" aria-label="Heading"><span class="mi s16" aria-hidden="true">title</span></button>
+<span class="vs"></span>
+<button class="btn sm i" aria-label="Bulleted list"><span class="mi s16" aria-hidden="true">format_list_bulleted</span></button>
+<button class="btn sm i" aria-label="Code"><span class="mi s16" aria-hidden="true">code</span></button>
+<span class="vs"></span>
+<button class="btn sm" aria-label="Insert wiki link"><span class="mi s16" aria-hidden="true">data_array</span>Wiki link</button>
+</div>
+<div class="mdbody" aria-label="Page content">
+<h1>Welcome</h1>
+<p>This is your knowledge base: a folder of Markdown pages that link to each other. The app reads those links and shows, for every page, what it links to and what links back.</p>
+<h2>Next steps</h2>
+<ul>
+<li>Create a page with <span class="kbd">New page</span> in the Explorer.</li>
+<li>Link to a page that doesn't exist yet, like <a class="wu" title="No page yet. Click to create."><span class="mi" aria-hidden="true">link_off</span>My First Note</a>. It stays marked as unresolved until you create it.</li>
+<li>Ask the assistant a question once an API key is set. It cites the pages it read.</li>
+</ul>
+</div>
+<section class="lp" aria-label="Links">
+<div class="lph" style="border-bottom:0"><span class="mi s16" aria-hidden="true">chevron_right</span>Links<span class="row sm t3" style="font-weight:400;gap:10px;margin-left:8px"><span>Outgoing <span class="cnt">0</span></span><span>Backlinks <span class="cnt">0</span></span><span>Unresolved <span class="cnt">1</span></span></span></div>
+</section>
+</main>
+<div class="gut" aria-hidden="true"></div>
+<aside class="pane" style="width:420px;flex:none" aria-label="Chat">
+<div class="ph"><span class="pt">Chat</span><span class="chip" style="margin-left:6px"><span class="mi s14" aria-hidden="true">smart_toy</span>Anthropic · no key</span><span class="grow"></span><button class="btn sm o" disabled><span class="mi s16" aria-hidden="true">add_comment</span>New chat</button></div>
+<div class="msgs" style="justify-content:center">
+<div class="empty" style="flex:none;padding:0 12px">
+<div class="eic"><span class="mi s24" aria-hidden="true">forum</span></div>
+<h2 style="margin:0;font-weight:500;font-size:15px;color:var(--tx)">Ask about your pages</h2>
+<p class="sm" style="margin:0;max-width:300px">Answers come from your knowledge base, with citations. Changes to pages always wait for your approval.</p>
+</div>
+<div class="card" style="padding:14px;gap:8px;background:var(--sur)" role="status">
+<div class="row b"><span class="mi s20 td" aria-hidden="true">key_off</span>Configure an API key in Settings</div>
+<p class="sm t2" style="margin:0">The selected provider is Anthropic, and no key is set yet. Page text the assistant reads is sent to that provider; Ollama keeps everything local.</p>
+<a class="btn p sm" style="align-self:flex-start" href="#settings"><span class="mi s16" aria-hidden="true">settings</span>Open Settings</a>
+</div>
+</div>
+<div class="comp">
+<textarea class="ta" disabled aria-label="Message" placeholder="Add an API key to start chatting"></textarea>
+<div class="row" style="margin-top:6px"><span class="xs t3">Enter to send · Shift+Enter for a new line</span><span class="grow"></span><button class="btn sm p" disabled><span class="mi s16" aria-hidden="true">send</span>Send</button></div>
+</div>
+</aside>
+</div>
+</div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":3040,"height":1012}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { themes: [{ cls: 'light', name: 'Light', ti: 'dark_mode', tl: 'Switch to dark theme' }, { cls: 'dark', name: 'Dark', ti: 'light_mode', tl: 'Switch to light theme' }] };
+  }
+}
+</script>
+</body>
+</html>

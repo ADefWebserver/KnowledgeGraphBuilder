@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Editor states</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./kgb.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&amp;display=block">
+<style>
+body{margin:0}
+a{color:#4340d2}a:hover{color:#2f2ca6}
+</style>
+</helmet>
+<div class="board" style="width:2984px;height:1180px">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div>
+<p class="tl">{{t.name}}</p>
+<div class="sheet {{t.cls}}" style="width:1432px;height:1068px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px">
+
+<div class="col" style="gap:10px">
+<p class="cap" style="margin:0">Preview mode · rendered page, clickable wiki links</p>
+<main class="pane" style="height:470px;border:1px solid var(--bd);border-radius:8px;overflow:hidden;background:var(--bg)" aria-label="Editor">
+<div class="eh" style="background:var(--panel)">
+<div class="col grow" style="gap:1px"><h1 class="etitle" style="margin:0">Linking Pages</h1><nav class="crumb"><span>my-notes</span><span class="mi s14" aria-hidden="true">chevron_right</span><span>Getting Started</span><span class="mi s14" aria-hidden="true">chevron_right</span><span>Linking Pages.md</span></nav></div>
+<button class="btn tx sm" disabled>Revert</button><button class="btn o sm" disabled><span class="mi s16" aria-hidden="true">save</span>Saved</button>
+<div class="seg" role="radiogroup" aria-label="Editor mode"><button role="radio" aria-checked="false">Design</button><button role="radio" aria-checked="false">Source</button><button class="on" role="radio" aria-checked="true"><span class="mi s16" aria-hidden="true">visibility</span>Preview</button></div>
+</div>
+<div class="mdbody solo" style="margin-bottom:12px;position:relative">
+<div class="row" style="gap:6px;margin-bottom:10px;flex-wrap:wrap"><span class="bdg b-ne"><span class="mi" aria-hidden="true">sell</span>guide</span><span class="bdg b-ne"><span class="mi" aria-hidden="true">alternate_email</span>alias: Links</span><span class="xs t3">Updated 2026-10-28</span></div>
+<h1>Linking Pages</h1>
+<p>Connect pages with wiki links. Type two square brackets and start typing a page name.</p>
+<h2>Four link forms</h2>
+<ul>
+<li><a class="wl fr" href="#install">Install</a> — a bare page name</li>
+<li><a class="wl" href="#chat">Getting Started/Using Chat</a> — a folder path</li>
+<li><a class="wl" href="#welcome">Welcome › Next steps</a> — a page and a heading</li>
+<li><a class="wl" href="#overview">the Alpha project</a> — display text</li>
+</ul>
+<h2>What's next</h2>
+<p>See the <a class="wu" href="#create-roadmap"><span class="mi" aria-hidden="true">link_off</span>Roadmap</a> for planned features.</p>
+<div class="tip" style="left:96px;bottom:4px">No page named Roadmap yet. Click to create it.</div>
+</div>
+</main>
+</div>
+
+<div class="col" style="gap:10px">
+<p class="cap" style="margin:0">Source mode · Invalid YAML (save still allowed)</p>
+<main class="pane" style="height:470px;border:1px solid var(--bd);border-radius:8px;overflow:hidden;background:var(--bg)" aria-label="Editor">
+<div class="eh" style="background:var(--panel)">
+<div class="col grow" style="gap:1px"><div class="row" style="gap:6px"><h1 class="etitle" style="margin:0">Alpha Project</h1><span class="dot" role="img" aria-label="Unsaved changes"></span><span class="sm t3">Unsaved</span></div><nav class="crumb"><span>my-notes</span><span class="mi s14" aria-hidden="true">chevron_right</span><span>Projects</span><span class="mi s14" aria-hidden="true">chevron_right</span><span>Alpha</span><span class="mi s14" aria-hidden="true">chevron_right</span><span>Overview.md</span></nav></div>
+<button class="btn tx sm"><span class="mi s16" aria-hidden="true">undo</span>Revert</button><button class="btn p sm"><span class="mi s16" aria-hidden="true">save</span>Save</button>
+<div class="seg" role="radiogroup" aria-label="Editor mode"><button role="radio" aria-checked="false">Design</button><button class="on" role="radio" aria-checked="true">Source</button><button role="radio" aria-checked="false"><span class="mi s16" aria-hidden="true">visibility</span>Preview</button></div>
+</div>
+<div class="propbox" style="border-color:var(--wab)">
+<div class="prophd"><span class="mi s16" aria-hidden="true">expand_more</span>Properties<span class="bdg b-wa"><span class="mi" aria-hidden="true">warning</span>Invalid YAML</span><span class="grow"></span><span class="t2" style="font-weight:400">Line 3: missing closing ]</span></div>
+<div class="src" style="padding:0 0 8px 6px;font-size:12px;line-height:19px"><div><span class="ln">1</span><span class="yk">title</span>: Alpha Project</div><div class="err-l"><span class="ln">2</span><span class="yk">tags</span>: [project, planning<span class="mi s14 tw" style="margin-left:6px" aria-label="error here">error</span></div><div><span class="ln">3</span><span class="yk">updated</span>: 2026-10-30</div></div>
+<div class="help" style="padding:0 10px 8px;margin:0"><span class="mi s14" aria-hidden="true">info</span>Saving writes the text as typed. Title and tags fall back to the file name until the YAML parses.</div>
+</div>
+<div class="mdbody solo" style="margin-bottom:12px;padding:10px 6px">
+<div class="src"><div><span class="ln">5</span># Alpha Project</div><div><span class="ln">6</span></div><div><span class="ln">7</span>Overview of the Alpha project. How the knowledge</div><div><span class="ln">8</span>base is organized is on [[Welcome]].</div><div><span class="ln">9</span></div><div><span class="ln">10</span>## Status</div><div><span class="ln">11</span>[STATUS]</div></div>
+</div>
+</main>
+</div>
+
+<div class="col" style="gap:10px">
+<p class="cap" style="margin:0">Empty state · no page selected</p>
+<main class="pane" style="height:470px;border:1px solid var(--bd);border-radius:8px;overflow:hidden" aria-label="Editor">
+<div class="empty">
+<div class="eic"><span class="mi s24" aria-hidden="true">draft</span></div>
+<h2 style="margin:4px 0 0;font-weight:500;font-size:16px;color:var(--tx)">Select a page or create one</h2>
+<p class="sm" style="margin:0;max-width:340px">Pick a page in the Explorer, open a citation from the chat, or start a new page in the knowledge root.</p>
+<div class="row" style="margin:6px 0 10px"><button class="btn p"><span class="mi s16" aria-hidden="true">note_add</span>New page</button><button class="btn o"><span class="mi s16" aria-hidden="true">create_new_folder</span>New folder</button></div>
+<div class="sct">
+<span class="kbd">Ctrl+S</span><span>Save the open page</span>
+<span class="kbd">F2</span><span>Rename the selected tree item</span>
+<span class="kbd">Del</span><span>Delete the selected tree item</span>
+<span class="kbd">Enter</span><span>Send a chat message (Shift+Enter: new line)</span>
+<span class="kbd">Esc</span><span>Close a dialog or menu</span>
+</div>
+</div>
+</main>
+</div>
+
+<div class="col" style="gap:10px">
+<p class="cap" style="margin:0">Page no longer exists on disk</p>
+<main class="pane" style="height:470px;border:1px solid var(--bd);border-radius:8px;overflow:hidden;background:var(--bg)" aria-label="Editor">
+<div class="eh" style="background:var(--panel)">
+<div class="col grow" style="gap:1px"><div class="row" style="gap:6px"><h1 class="etitle" style="margin:0">Using Chat</h1><span class="dot" role="img" aria-label="Unsaved changes"></span><span class="sm t3">Not on disk</span></div><nav class="crumb" style="text-decoration:line-through"><span>my-notes</span><span class="mi s14" aria-hidden="true">chevron_right</span><span>Getting Started</span><span class="mi s14" aria-hidden="true">chevron_right</span><span>Using Chat.md</span></nav></div>
+<div class="seg" role="radiogroup" aria-label="Editor mode"><button class="on" role="radio" aria-checked="true">Design</button><button role="radio" aria-checked="false">Source</button><button role="radio" aria-checked="false"><span class="mi s16" aria-hidden="true">visibility</span>Preview</button></div>
+</div>
+<div style="padding:10px 12px 0">
+<div class="callout wa" role="alert"><span class="mi s20" aria-hidden="true">report</span><div class="grow"><b>This page no longer exists.</b> Using Chat.md was moved or deleted outside the app. Your text is still here; save it to keep it.<div class="row" style="margin-top:8px"><button class="btn sm p"><span class="mi s16" aria-hidden="true">save_as</span>Save as new page</button><button class="btn sm o">Close</button></div></div></div>
+</div>
+<div class="mdbody solo" style="margin-bottom:12px">
+<h1>Using Chat</h1>
+<p>Ask questions in plain words. The assistant searches your pages, reads the relevant ones and cites them, so you can open each source.</p>
+<p>It can also propose new pages or edits. Nothing is written until you apply the change.</p>
+</div>
+</main>
+</div>
+
+</div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2984,"height":1180}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { themes: [{ cls: 'light', name: 'Light' }, { cls: 'dark', name: 'Dark' }] };
+  }
+}
+</script>
+</body>
+</html>

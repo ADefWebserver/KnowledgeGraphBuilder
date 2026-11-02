@@ -1,0 +1,117 @@
+@using DiffPlex.DiffBuilder
+@using DiffPlex.DiffBuilder.Model
+
+<div class="kgb-diff @(Wide ? "wide" : "")" role="table" aria-label="Changes">
+    @foreach (var block in Blocks())
+    {
+        if (block.Folded is { } folded)
+        {
+            <button class="kgb-fold" @onclick="@(() => expandedFolds.Add(folded.Start))">
+                <span class="mi s14" aria-hidden="true">unfold_more</span>@folded.Count unchanged lines
+            </button>
+        }
+        else
+        {
+            var l = block.Line!;
+            <div class="kgb-dl @l.Css" role="row">
+                <span class="n" role="cell">@l.OldNo</span>
+                <span class="n" role="cell">@l.NewNo</span>
+                <span class="s" role="cell" aria-label="@l.SignLabel">@l.Sign</span>
+                <span class="x" role="cell">@l.Text</span>
+            </div>
+        }
+    }
+    @if (truncatedAt is not null)
+    {
+        <button class="kgb-fold" @onclick="@(() => showAll = true)">
+            <span class="mi s14" aria-hidden="true">expand_more</span>Show all @lines.Count lines
+        </button>
+    }
+</div>
+
+@code {
+    [Parameter] public string? OldText { get; set; }
+    [Parameter] public string NewText { get; set; } = "";
+    [Parameter] public bool Wide { get; set; }
+
+    /// <summary>For new pages: show this many lines, then "Show all".</summary>
+    [Parameter] public int NewPageLines { get; set; } = 12;
+
+    public sealed record Line(string Css, string Sign, string SignLabel, int? OldNo, int? NewNo, string Text, bool Unchanged);
+    sealed record Fold(int Start, int Count);
+    sealed record Block(Line? Line, Fold? Folded);
+
+    List<Line> lines = [];
+    readonly HashSet<int> expandedFolds = [];
+    bool showAll;
+    int? truncatedAt;
+    string? builtFor;
+
+    protected override void OnParametersSet()
+    {
+        var key = (OldText ?? "\0null") + "\u0001" + NewText;
+        if (key == builtFor) return;
+        builtFor = key;
+        lines = Build(OldText, NewText);
+    }
+
+    public static List<Line> Build(string? oldText, string newText)
+    {
+        var result = new List<Line>();
+        var diff = InlineDiffBuilder.Diff(Normalize(oldText ?? ""), Normalize(newText), ignoreWhiteSpace: false);
+        int oldNo = 0, newNo = 0;
+        foreach (var piece in diff.Lines)
+        {
+            switch (piece.Type)
+            {
+                case ChangeType.Inserted:
+                    result.Add(new Line("add", "+", "added", null, ++newNo, piece.Text, false));
+                    break;
+                case ChangeType.Deleted:
+                    result.Add(new Line("rm", "−", "removed", ++oldNo, null, piece.Text, false));
+                    break;
+                default:
+                    result.Add(new Line("", " ", "unchanged", ++oldNo, ++newNo, piece.Text, true));
+                    break;
+            }
+        }
+        // A trailing newline produces an empty last line; drop it for display.
+        if (result.Count > 0 && result[^1].Text.Length == 0 && result[^1].Unchanged) result.RemoveAt(result.Count - 1);
+        return result;
+    }
+
+    static string Normalize(string s) => s.Replace("\r\n", "\n");
+
+    IEnumerable<Block> Blocks()
+    {
+        truncatedAt = null;
+        if (OldText is null && !showAll && lines.Count > NewPageLines + 2)
+        {
+            truncatedAt = NewPageLines;
+            foreach (var l in lines.Take(NewPageLines)) yield return new Block(l, null);
+            yield break;
+        }
+
+        // Fold unchanged runs longer than 3 lines, keeping one line of context on each side of a change.
+        var i = 0;
+        while (i < lines.Count)
+        {
+            if (!lines[i].Unchanged) { yield return new Block(lines[i], null); i++; continue; }
+            var start = i;
+            while (i < lines.Count && lines[i].Unchanged) i++;
+            var run = i - start;
+            var leading = start == 0 ? 0 : 1;
+            var trailing = i == lines.Count ? 0 : 1;
+            if (run > 3 && run - leading - trailing > 1 && !expandedFolds.Contains(start))
+            {
+                for (var k = start; k < start + leading; k++) yield return new Block(lines[k], null);
+                yield return new Block(null, new Fold(start, run - leading - trailing));
+                for (var k = i - trailing; k < i; k++) yield return new Block(lines[k], null);
+            }
+            else
+            {
+                for (var k = start; k < i; k++) yield return new Block(lines[k], null);
+            }
+        }
+    }
+}

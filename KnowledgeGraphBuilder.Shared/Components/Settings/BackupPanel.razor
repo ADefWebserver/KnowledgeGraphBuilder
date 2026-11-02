@@ -1,0 +1,92 @@
+@inject IServiceProvider Services
+@inject DialogService Dialogs
+@inject NotificationService Notify
+
+<RadzenCard Variant="Variant.Outlined">
+    <h2 class="kgb-card-h"><span class="mi" aria-hidden="true">backup</span>Backup and storage</h2>
+    @if (usage is not null)
+    {
+        <div class="row sm" style="justify-content:space-between">
+            <span>@usage.Pages pages · about @Mb(usage.EstimatedBytes) of @Mb(usage.AssumedQuotaBytes) used</span>
+            <span class="t3">@((int)Math.Round(usage.Fraction * 100))%</span>
+        </div>
+        <div class="kgb-meter @(usage.IsNearlyFull ? "warn" : "")" style="margin:6px 0 10px" role="progressbar"
+             aria-valuemin="0" aria-valuemax="100" aria-valuenow="@((int)Math.Round(usage.Fraction * 100))" aria-label="Browser storage used">
+            <i style="width:@(Math.Min(100, usage.Fraction * 100).ToString("0.#", System.Globalization.CultureInfo.InvariantCulture))%"></i>
+        </div>
+        @if (usage.IsNearlyFull)
+        {
+            <div class="kgb-callout wa" role="alert" style="margin-bottom:10px"><span class="mi" aria-hidden="true">warning</span>
+                <div>Browser storage is almost full. Export a backup, then delete pages you don't need. Saves fail once it's full (nothing is lost).</div></div>
+        }
+    }
+    <div class="kgb-callout in" style="margin-bottom:12px">
+        <span class="mi" aria-hidden="true">info</span>
+        <div>Pages live only in this browser. Clearing site data removes them, so export a backup now and then. Backups contain pages and folders only, never your settings or API key.</div>
+    </div>
+    <div class="row" style="flex-wrap:wrap">
+        <RadzenButton Text="Export (.zip)" Icon="download" ButtonStyle="ButtonStyle.Primary" Click="@ExportAsync" IsBusy="@exporting" />
+        <label class="kgb-lbl" style="margin:0 0 0 12px" for="kgb-import-mode">Import mode</label>
+        <RadzenDropDown id="kgb-import-mode" TValue="ImportMode" Data="@(new[] { ImportMode.Merge, ImportMode.Replace })" @bind-Value="@mode" Style="width:140px" />
+        <label class="rz-button rz-button-md rz-variant-outlined rz-base rz-shade-default" style="cursor:pointer">
+            <span class="rz-button-box"><span class="mi s16" aria-hidden="true">upload</span><span class="rz-button-text">&nbsp;Import (.zip)</span></span>
+            <InputFile OnChange="@ImportAsync" accept=".zip,application/zip" style="display:none" />
+        </label>
+    </div>
+    <div class="kgb-help">Merge adds pages that don't exist yet. Replace deletes every page first.</div>
+    @if (lastImport is not null)
+    {
+        <div class="kgb-callout su" style="margin-top:10px" role="status"><span class="mi" aria-hidden="true">check_circle</span>
+            <div>Imported @lastImport.Imported pages, skipped @lastImport.Skipped existing.
+                @if (lastImport.Rejected.Count > 0) { <span> Rejected @lastImport.Rejected.Count entries: <span class="mono">@string.Join(", ", lastImport.Rejected.Take(5))</span></span> }
+            </div></div>
+    }
+</RadzenCard>
+
+@code {
+    StorageUsage? usage;
+    ImportMode mode = ImportMode.Merge;
+    bool exporting;
+    ImportResult? lastImport;
+
+    IBackupService? Backup => Services.GetService(typeof(IBackupService)) as IBackupService;
+    PersistingKnowledgeStore? Store => Services.GetService(typeof(PersistingKnowledgeStore)) as PersistingKnowledgeStore;
+
+    protected override async Task OnInitializedAsync() => await RefreshUsageAsync();
+
+    async Task RefreshUsageAsync()
+    {
+        if (Store is { } store) usage = await store.GetUsageAsync();
+    }
+
+    static string Mb(long bytes) => (bytes / 1_000_000.0).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) + " MB";
+
+    async Task ExportAsync()
+    {
+        if (Backup is null) return;
+        exporting = true;
+        try { await Backup.ExportAsync(); }
+        catch (Exception ex) { Notify.Notify(NotificationSeverity.Error, "Export failed", ex.Message); }
+        finally { exporting = false; }
+    }
+
+    async Task ImportAsync(InputFileChangeEventArgs e)
+    {
+        if (Backup is null) return;
+        if (mode == ImportMode.Replace)
+        {
+            var r = await Dialogs.ChooseAsync("Replace all pages?", "Every page in this browser will be deleted permanently, then the backup is imported.",
+                [new("Cancel", "cancel", Default: true), new("Replace", "replace", ButtonStyle.Danger, Variant.Filled)], "delete_forever", "da");
+            if (r != "replace") return;
+        }
+        try
+        {
+            await using var stream = e.File.OpenReadStream(KnowledgeStorageConstants.MaxImportBytes);
+            lastImport = await Backup.ImportAsync(stream, mode);
+            Notify.Notify(NotificationSeverity.Success, "Import finished", $"{lastImport.Imported} pages imported.", TimeSpan.FromSeconds(4));
+        }
+        catch (IOException ex) { Notify.Notify(NotificationSeverity.Error, "Import failed", ex.Message.Contains("exceeds") ? "The file is larger than 10 MB." : ex.Message); }
+        catch (KnowledgeException ex) { PageCommands.ShowError(Notify, ex, "Import failed"); }
+        await RefreshUsageAsync();
+    }
+}

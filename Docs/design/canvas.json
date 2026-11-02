@@ -1,0 +1,226 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "ApprovalStates.dc.html": {
+      "h": 1752,
+      "title": "3b · Approval card states and full-screen diff",
+      "w": 2880,
+      "x": 260,
+      "y": 3904
+    },
+    "Approvals.dc.html": {
+      "h": 1012,
+      "title": "3 · Workspace with two pending approval cards",
+      "w": 3040,
+      "x": 260,
+      "y": 2752
+    },
+    "Dialogs.dc.html": {
+      "h": 960,
+      "title": "5 · Name and Move dialogs",
+      "w": 3080,
+      "x": 280,
+      "y": 11528
+    },
+    "Dialogs2.dc.html": {
+      "h": 1000,
+      "title": "5b · Delete, conflict, unsaved, link updates",
+      "w": 3560,
+      "x": 260,
+      "y": 12608
+    },
+    "Editor.dc.html": {
+      "h": 1180,
+      "title": "2c · Editor: preview, invalid YAML, empty, page gone",
+      "w": 2984,
+      "x": 260,
+      "y": 6648
+    },
+    "Explorer.dc.html": {
+      "h": 772,
+      "title": "2b · Explorer: context menu, drag and drop, search",
+      "w": 2760,
+      "x": 260,
+      "y": 5756
+    },
+    "FirstRun.dc.html": {
+      "h": 1012,
+      "title": "7b · First run: seeded Welcome page, no API key",
+      "w": 3040,
+      "x": 260,
+      "y": 15188
+    },
+    "Main.dc.html": {
+      "h": 1500,
+      "title": "1 · Design system",
+      "w": 2980,
+      "x": 310,
+      "y": -96
+    },
+    "Narrow.dc.html": {
+      "h": 1020,
+      "title": "4 · Narrow layout, about 400 px",
+      "w": 2752,
+      "x": 288,
+      "y": 7948
+    },
+    "Settings.dc.html": {
+      "h": 1100,
+      "title": "6 · Settings, desktop host",
+      "w": 2720,
+      "x": 280,
+      "y": 9088
+    },
+    "SettingsBrowser.dc.html": {
+      "h": 1100,
+      "title": "6b · Settings, browser host (read-only)",
+      "w": 2720,
+      "x": 280,
+      "y": 10308
+    },
+    "States.dc.html": {
+      "h": 1340,
+      "title": "7 · Notifications, chat errors, skeletons, field states",
+      "w": 3080,
+      "x": 260,
+      "y": 13728
+    },
+    "Workspace.dc.html": {
+      "h": 1012,
+      "title": "2 · Workspace, desktop: page open, chat streaming",
+      "w": 3040,
+      "x": 250,
+      "y": 1620
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-11-01T12:00:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "noteOrder": [
+    "title",
+    "nMain",
+    "nWork",
+    "nAppr",
+    "nStates",
+    "nExpl",
+    "nEdit",
+    "nNarrow",
+    "nSet",
+    "nSetB",
+    "nDlg",
+    "nDlg2",
+    "nSys",
+    "nFirst"
+  ],
+  "notes": {
+    "nAppr": {
+      "text": "APPROVAL CARDS (key interaction)\n• When the model calls a write tool, the stream pauses and a 'Waiting for your decision' row appears. Each proposed change is one card: a RadzenCard (Variant.Outlined) in the transcript.\n• Card header: action RadzenBadge with icon (Create page / Update page / Create folder), target path in monospace, state badge, and an icon RadzenButton (open_in_full) that opens the full-screen diff via DialogService.\n• Diff: custom unified-diff markup in a CSS grid (old line no. / new line no. / sign / text). Rows carry + or − plus a tint. Unchanged runs longer than 3 lines fold into a 'Show N unchanged lines' text button. A new page is all + lines; long ones show 12 lines and then a 'Show all' row.\n• Footer: Reject (Outlined) first, then Apply (Primary).\n• With 2 or more cards, a sticky bar pins to the bottom of the message list: 'N of M decided', a RadzenProgressBar, Reject all, Apply all.\n• Focus order: the first pending card's Apply gets focus when the cards arrive. Within a card: Expand → Reject → Apply. Then the sticky bar: Reject all → Apply all. Esc (focus in chat) = Stop, which turns pending cards into Cancelled. Sending a new message turns them into Superseded; the composer says so before you send.\n• After apply: the tree refreshes without stealing selection, and the chat adds a 'Pages changed' note with citation chips.",
+      "w": 580,
+      "x": -660,
+      "y": 2752
+    },
+    "nDlg": {
+      "text": "NAME AND MOVE DIALOGS\nDialogService.OpenAsync<NameDialog> (Width 420, ShowClose, CloseDialogOnEsc).\n• RadzenTemplateForm + RadzenTextBox (autofocused; on Rename the name is preselected without '.md') + inline validator messages (icon + text, linked with aria-describedby).\n• Validates while typing: invalid characters \\ / : * ? \" < > |, a trailing dot or space, reserved names (CON, PRN, AUX, NUL, COM1–9, LPT1–9), an existing name (case-insensitive) and length.\n• The primary button is disabled while the name is invalid. Enter submits; Esc cancels.\n• Move to: a RadzenTree of folders only, with the root first. The current folder is labeled 'Current' and disabled; for a folder move, the folder itself and its descendants are disabled. The destination path is previewed in monospace.\nFocus order: field → Cancel → primary → close.",
+      "w": 580,
+      "x": -660,
+      "y": 11528
+    },
+    "nDlg2": {
+      "text": "CONFIRM AND RESULT DIALOGS\n• Delete: the counts come from a dry-run scan. Recycle Bin variant: a Danger button, 'Move to Recycle Bin'. Permanent variant (no Recycle Bin): a Danger RadzenAlert and a type-the-name RadzenTextBox; 'Delete permanently' stays disabled until the name matches.\n• Conflict on save: Reload (default), Overwrite (danger outlined), Cancel.\n• Unsaved changes: Save (default), Discard, Cancel. Window close uses the same dialog (MAUI Window close / beforeunload).\n• Rename or move with link updates: a progress dialog (RadzenProgressBar; no close button until it's done), then a success result or a warning result that lists the pages that failed, each one clickable.\nInitial focus: the default button, except on destructive dialogs, where Cancel gets focus.",
+      "w": 580,
+      "x": -660,
+      "y": 12608
+    },
+    "nEdit": {
+      "text": "EDITOR STATES\n• Mode switch: RadzenSelectBar Design | Source | Preview. Design = RadzenMarkdownEditor (WYSIWYG). Source = raw Markdown with line numbers in monospace. Preview = read-only rendered page; wiki links are real links that open the page, and an unresolved link opens the New page dialog prefilled.\n• Properties: a collapsible RadzenFieldset. A YAML parse error shows a warning RadzenBadge ('Invalid YAML') plus the line message and highlights the line. Save stays enabled.\n• Empty state: a centered RadzenStack with New page and New folder buttons and a shortcut list.\n• Page no longer exists: a RadzenAlert (Warning) above the editor. The buffer stays editable. Actions: Save as new page (primary) and Close.",
+      "w": 580,
+      "x": -660,
+      "y": 6648
+    },
+    "nExpl": {
+      "text": "EXPLORER STATES\n• Context menu: RadzenContextMenu (ContextMenuService.Open with RadzenMenuItems): Open · New page here · New folder here · Rename (F2) · Move to… · Delete (Del). Opens on right-click, Shift+F10 or the Menu key. Arrow keys move, Enter runs, Esc closes and returns focus to the node.\n• Drag and drop: HTML5 drag events on the RadzenTree item Template (draggable, @ondragover, @ondrop). A valid target gets a dashed primary outline plus a drive_file_move icon. An invalid target (a folder into itself or a descendant) gets a dashed danger outline, a block icon and a tooltip with the reason. The keyboard alternative is Move to….\n• Search: RadzenTextBox with a 200 ms debounce. Results replace the tree (RadzenDataList): title, monospace path, and a snippet of about 160 characters with <mark> highlights. Down arrow enters the results; Esc clears the search and restores the tree.\n• Unsaved dot: an 8 px circle with aria-label 'unsaved changes' and a tooltip, so it's announced and isn't a color cue alone.",
+      "w": 580,
+      "x": -660,
+      "y": 5756
+    },
+    "nFirst": {
+      "text": "FIRST RUN\n• The knowledge root is created with a seeded Welcome.md, which opens selected.\n• A dismissible RadzenAlert (Info, AllowClose) above the editor says where the files live; Open folder is desktop only.\n• The Welcome page shows all four link forms, and one deliberately unresolved link so the style is learned early.\n• Chat shows the no-API-key card and a disabled composer until a key is configured.",
+      "w": 580,
+      "x": -660,
+      "y": 15188
+    },
+    "nMain": {
+      "text": "DESIGN SYSTEM\nBase: Radzen Blazor 12, Material theme, compact density. The tokens are overrides of the --rz-* variables, kept in one small app.css and switched by RadzenAppearanceToggle (ThemeService: material / material-dark). The --kgb-* tokens are app-specific additions.\n\nFonts: Roboto (the Material default) for the UI. JetBrains Mono for YAML, paths, diffs, tool rows and keyboard hints.\n\nCustom CSS on top of Radzen (about 200 lines): .wl wiki link, .wu unresolved link (dashed underline, warning color, link_off icon), .cite citation chip, .tool row, .diff with .add/.rm rows and a +/− sign column, .unsaved-dot, and icon + word status badges (RadzenBadge with BadgeStyle).\n\nAccessibility: all text is at least 4.5:1 in both themes. Every focusable element gets a 2 px primary ring with a 2 px offset. Status is never shown by color alone: badges carry an icon and a word, diff rows carry + or −, and unresolved links carry an icon and a dashed underline.",
+      "w": 580,
+      "x": -660,
+      "y": 0
+    },
+    "nNarrow": {
+      "text": "NARROW (under 900 px)\n• RadzenSplitter is replaced by RadzenTabs (RenderMode.Client, so each panel keeps its state): Explorer, Editor, Chat.\n• The Editor tab shows the unsaved dot. The Chat tab shows a RadzenBadge with the number of pending approvals (aria-label '2 approvals pending').\n• Opening a page from the tree or from a citation chip switches to the Editor tab.\n• The header keeps the app icon and root name; Settings becomes an icon button.\n• Tabs and primary actions are 44 px tall for touch.\n• The sticky approval bar stacks its buttons full width.\n• Focus order: header → tab list (arrow keys between tabs) → the active panel.",
+      "w": 580,
+      "x": -660,
+      "y": 7948
+    },
+    "nSet": {
+      "text": "SETTINGS (route /settings)\nRadzenLayout body > a centered RadzenStack (max-width 760) of RadzenCard sections.\n• Knowledge root: RadzenFormField + monospace RadzenTextBox + Browse (folder picker, desktop only) + Apply. Inline validation: drive roots are refused (error); more than 10,000 pages gives a warning.\n• AI provider: RadzenDropDown for the provider, RadzenTextBox for the model. The Endpoint RadzenTextBox appears only for Azure OpenAI and Ollama. API key: RadzenBadge 'Configured' / 'Not set' + a Replace button that opens a dialog with RadzenPassword. The key is never rendered back. Privacy note: RadzenAlert (Info).\n• Graph: stat tiles + Rebuild graph RadzenButton → RadzenProgressBar → result line.\n• Appearance: RadzenAppearanceToggle with a label.\nFocus order: back link → each card top to bottom; each Apply follows its field.",
+      "w": 580,
+      "x": -660,
+      "y": 9088
+    },
+    "nSetB": {
+      "text": "SETTINGS · BROWSER HOST (Blazor WebAssembly on localhost)\nThe same page, driven by a host capability flag (CanEditSettings = false).\n• Knowledge root shows only the folder name, read-only with a lock icon, and notes that it's configured on the server.\n• AI provider: every field is read-only and there's no Replace button. The key status is still shown.\n• Graph rebuild and Appearance stay available.\n• Read-only fields use ReadOnly, not Disabled, so they stay in the tab order and screen readers announce their values.",
+      "w": 580,
+      "x": -660,
+      "y": 10308
+    },
+    "nStates": {
+      "text": "CARD STATES (icon + word, never color alone)\nPending — schedule, neutral. Apply and Reject enabled.\nApproved — check, primary. 'Waiting for 1 more decision', with Undo.\nApplied — check_circle, success. Diff collapses; 'Open page' link.\nRejected — block, neutral. Diff collapses; 'Show diff' reopens it.\nNot applied (conflict) — warning, warning color. The file changed on disk after the proposal; offers Open current page and Ask again.\nCancelled — cancel, neutral. The user pressed Stop.\nSuperseded — redo, neutral. The user sent a new message instead.\nCreate folder cards have no diff, just the resulting path.\nDecided cards keep their header so the transcript stays auditable.\n\nFull-screen diff: RadzenDialog (Width 90vw, Height 85vh, ShowClose, CloseDialogOnEsc) with a wider gutter and the same Reject / Apply footer. Esc closes it and returns focus to the Expand button.",
+      "w": 580,
+      "x": -660,
+      "y": 3884
+    },
+    "nSys": {
+      "text": "NOTIFICATIONS AND SYSTEM STATES\n• Toasts: NotificationService.Notify with Severity Success / Info / Warning / Error, top right. Success and info close after 4 s; warnings and errors stay until dismissed. A custom template adds actions (Retry, Open, Show in tree).\n• Chat errors are transcript items. Retryable ones (rate limit, network, overloaded) get Retry. Non-retryable ones say what to do next.\n• No API key: an inline card with a RadzenLink to /settings; the composer is disabled.\n• Skeletons: a light CSS shimmer for the tree, editor and chat while the index loads.\n• Not Found: a short 404 inside the shell, with a link back to Workspace.",
+      "w": 580,
+      "x": -660,
+      "y": 13728
+    },
+    "nWork": {
+      "text": "WORKSPACE · DESKTOP (900 px and wider)\n• Shell: RadzenLayout > RadzenHeader holding RadzenIcon, RadzenText, a root chip, a RadzenLink to /settings and RadzenAppearanceToggle. No RadzenSidebar.\n• Panes: RadzenSplitter with 3 RadzenSplitterPanes: Explorer 272 px (min 200), Editor flexible, Chat 420 px (min 320). Resizable; sizes persist.\n• Explorer: icon-only RadzenButtons (Variant.Text, Size.Small, aria-label + title), RadzenTextBox search, RadzenTree with lazy Expand/LoadChildren and an item Template (icon, name, unsaved dot). RadzenContextMenu opens via ContextMenuService.\n• Editor: RadzenText title + RadzenBreadCrumb; Save / Revert RadzenButtons; RadzenSelectBar Design | Source | Preview; Properties = RadzenFieldset AllowCollapse holding a monospace RadzenTextArea; RadzenMarkdownEditor; Links panel = RadzenFieldset with three groups and RadzenBadge counts.\n• Chat: header with a provider/model chip and a New chat RadzenButton; message list; composer = RadzenTextArea + Send RadzenButton (it becomes Stop while streaming).\n\nShortcuts: Ctrl+S save · F2 rename · Delete delete (tree) · Enter send · Shift+Enter new line · Esc closes menus and dialogs, and stops a stream when focus is in chat.\n\nFocus order: header (Settings, theme) → Explorer toolbar → search → tree (one tab stop, arrow keys inside) → editor header (Save, Revert, mode) → Properties → editor body → Links panel → chat header → messages (citation chips) → composer → Send/Stop.",
+      "w": 580,
+      "x": -660,
+      "y": 1620
+    },
+    "title": {
+      "kind": "title1",
+      "maxW": 3040,
+      "text": "Knowledge Graph Builder — UI design (Radzen Blazor 12, Material, compact)",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Workspace.dc.html",
+    "Approvals.dc.html",
+    "ApprovalStates.dc.html",
+    "Explorer.dc.html",
+    "Editor.dc.html",
+    "Narrow.dc.html",
+    "Settings.dc.html",
+    "SettingsBrowser.dc.html",
+    "Dialogs.dc.html",
+    "Dialogs2.dc.html",
+    "States.dc.html",
+    "FirstRun.dc.html"
+  ],
+  "pages": [],
+  "title": "Knowledge Graph Builder UI"
+}

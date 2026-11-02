@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Confirm and result dialogs</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./kgb.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&amp;display=block">
+<style>
+body{margin:0}
+a{color:#4340d2}a:hover{color:#2f2ca6}
+</style>
+</helmet>
+<div class="board" style="width:3560px;height:1000px">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div>
+<p class="tl">{{t.name}}</p>
+<div class="sheet scrim {{t.cls}}" style="width:1720px;height:888px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px 24px;align-content:start">
+
+<div class="cell"><span class="clabel">Delete · to Recycle Bin</span>
+<div class="dlg" style="width:100%" role="alertdialog" aria-labelledby="e1">
+<div class="dlgh"><span class="mi s20 td" aria-hidden="true">delete</span><span id="e1">Delete “Getting Started”?</span><span class="grow"></span><button class="btn i" aria-label="Close (Esc)"><span class="mi" aria-hidden="true">close</span></button></div>
+<div class="dlgb">
+<p style="margin:0">3 pages, 1 folder, and 4 other files (hidden or non-Markdown) will be moved to the Recycle Bin.</p>
+<div class="callout ne"><span class="mi s16" aria-hidden="true">link_off</span><span>2 pages outside this folder link here. Those links will become unresolved.</span></div>
+</div>
+<div class="dlgf"><button class="btn o fr">Cancel</button><button class="btn d"><span class="mi s16" aria-hidden="true">delete</span>Move to Recycle Bin</button></div>
+</div></div>
+
+<div class="cell"><span class="clabel">Delete · permanent (no Recycle Bin)</span>
+<div class="dlg" style="width:100%" role="alertdialog" aria-labelledby="e2">
+<div class="dlgh"><span class="mi s20 td" aria-hidden="true">delete_forever</span><span id="e2">Permanently delete “Getting Started”?</span><span class="grow"></span><button class="btn i" aria-label="Close (Esc)"><span class="mi" aria-hidden="true">close</span></button></div>
+<div class="dlgb">
+<div class="callout da"><span class="mi s16" aria-hidden="true">report</span><span><b>This can't be undone.</b> The Recycle Bin isn't available for this location, so 3 pages, 1 folder and 4 other files will be deleted permanently.</span></div>
+<div><label class="lbl" for="cf">Type <span class="mono">Getting Started</span> to confirm</label><input id="cf" class="in fr" value="Getting Sta"></div>
+</div>
+<div class="dlgf"><button class="btn o">Cancel</button><button class="btn d" disabled><span class="mi s16" aria-hidden="true">delete_forever</span>Delete permanently</button></div>
+</div></div>
+
+<div class="cell"><span class="clabel">Conflict on save</span>
+<div class="dlg" style="width:100%" role="alertdialog" aria-labelledby="e3">
+<div class="dlgh"><span class="mi s20 tw" aria-hidden="true">sync_problem</span><span id="e3">This page was changed outside the app</span><span class="grow"></span><button class="btn i" aria-label="Close (Esc)"><span class="mi" aria-hidden="true">close</span></button></div>
+<div class="dlgb">
+<p style="margin:0"><span class="mono">Linking Pages.md</span> changed on disk at 14:32, after you started editing.</p>
+<div class="col sm t2" style="gap:4px">
+<div class="row" style="gap:6px;align-items:flex-start"><span class="mi s16" aria-hidden="true">refresh</span><span><b>Reload</b> loads the disk version and discards your edits.</span></div>
+<div class="row" style="gap:6px;align-items:flex-start"><span class="mi s16" aria-hidden="true">upload_file</span><span><b>Overwrite</b> saves your version and replaces the disk change.</span></div>
+</div>
+</div>
+<div class="dlgf"><button class="btn tx" style="margin-right:auto">Cancel</button><button class="btn do">Overwrite</button><button class="btn p fr">Reload</button></div>
+</div></div>
+
+<div class="cell"><span class="clabel">Unsaved changes · navigating away</span>
+<div class="dlg" style="width:100%" role="alertdialog" aria-labelledby="e4">
+<div class="dlgh"><span class="dot" style="width:10px;height:10px" aria-hidden="true"></span><span id="e4">Save changes to “Linking Pages”?</span><span class="grow"></span><button class="btn i" aria-label="Close (Esc)"><span class="mi" aria-hidden="true">close</span></button></div>
+<div class="dlgb"><p style="margin:0">You have unsaved edits. If you open another page without saving, they'll be lost.</p></div>
+<div class="dlgf"><button class="btn tx" style="margin-right:auto">Cancel</button><button class="btn o">Discard</button><button class="btn p fr"><span class="mi s16" aria-hidden="true">save</span>Save</button></div>
+</div></div>
+
+<div class="cell"><span class="clabel">Unsaved changes · closing the window</span>
+<div class="dlg" style="width:100%" role="alertdialog" aria-labelledby="e5">
+<div class="dlgh"><span class="dot" style="width:10px;height:10px" aria-hidden="true"></span><span id="e5">Close with unsaved changes?</span><span class="grow"></span><button class="btn i" aria-label="Close (Esc)"><span class="mi" aria-hidden="true">close</span></button></div>
+<div class="dlgb">
+<p style="margin:0">2 pages have unsaved edits:</p>
+<div class="col" style="gap:4px"><div class="row sm" style="gap:6px"><span class="dot" aria-hidden="true"></span><span class="mono">Getting Started/Linking Pages.md</span></div><div class="row sm" style="gap:6px"><span class="dot" aria-hidden="true"></span><span class="mono">Projects/Alpha/Overview.md</span></div></div>
+</div>
+<div class="dlgf"><button class="btn tx" style="margin-right:auto">Cancel</button><button class="btn o">Discard all</button><button class="btn p fr"><span class="mi s16" aria-hidden="true">save</span>Save all</button></div>
+</div></div>
+
+<div class="cell"><span class="clabel">Rename with link updates · in progress</span>
+<div class="dlg" style="width:100%" role="dialog" aria-labelledby="e6" aria-busy="true">
+<div class="dlgh"><span class="spin" aria-hidden="true"></span><span id="e6">Renaming “Install” to “Installation”</span></div>
+<div class="dlgb">
+<div class="col" style="gap:6px"><div class="row sm" style="justify-content:space-between"><span>Updating links</span><span class="t2">2 of 4 pages</span></div><span class="pbar wide" role="progressbar" aria-valuenow="2" aria-valuemax="4" aria-label="Pages updated"><i style="width:50%"></i></span></div>
+<div class="mono t3" style="font-size:11.5px">Getting Started/Using Chat.md</div>
+<p class="sm t3" style="margin:0">Keep the app open until this finishes.</p>
+</div>
+</div></div>
+
+<div class="cell"><span class="clabel">Rename · result</span>
+<div class="dlg" style="width:100%" role="dialog" aria-labelledby="e7">
+<div class="dlgh"><span class="mi s20 ts" aria-hidden="true">check_circle</span><span id="e7">Renamed. 4 pages updated.</span><span class="grow"></span><button class="btn i" aria-label="Close (Esc)"><span class="mi" aria-hidden="true">close</span></button></div>
+<div class="dlgb">
+<p class="sm t2" style="margin:0">Links to <span class="mono">Getting Started/Installation.md</span> were rewritten in:</p>
+<div class="row" style="flex-wrap:wrap;gap:6px"><a class="cite"><span class="mi" aria-hidden="true">description</span>Welcome</a><a class="cite"><span class="mi" aria-hidden="true">description</span>Linking Pages</a><a class="cite"><span class="mi" aria-hidden="true">description</span>Using Chat</a><a class="cite"><span class="mi" aria-hidden="true">description</span>FAQ</a></div>
+</div>
+<div class="dlgf"><button class="btn p fr">Done</button></div>
+</div></div>
+
+<div class="cell"><span class="clabel">Rename · some pages failed</span>
+<div class="dlg" style="width:100%" role="alertdialog" aria-labelledby="e8">
+<div class="dlgh"><span class="mi s20 tw" aria-hidden="true">warning</span><span id="e8">Renamed. 3 pages updated, 1 failed.</span><span class="grow"></span><button class="btn i" aria-label="Close (Esc)"><span class="mi" aria-hidden="true">close</span></button></div>
+<div class="dlgb">
+<div class="callout wa"><span class="mi s16" aria-hidden="true">warning</span><div class="col" style="gap:4px"><span>These pages still link to the old name:</span><a class="row" style="gap:6px;color:var(--tx)" href="#overview"><span class="mono" style="font-size:11.5px;text-decoration:underline">Projects/Alpha/Overview.md</span></a><span class="sm t2">The file is locked by another program.</span></div></div>
+</div>
+<div class="dlgf"><button class="btn o">Retry failed</button><button class="btn p fr">Done</button></div>
+</div></div>
+
+</div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":3560,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { themes: [{ cls: 'light', name: 'Light' }, { cls: 'dark', name: 'Dark' }] };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+{
+  "appHost": {
+    "path": "KnowledgeGraphBuilder.AppHost/KnowledgeGraphBuilder.AppHost.csproj"
+  }
+}

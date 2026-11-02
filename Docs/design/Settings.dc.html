@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Settings, desktop host</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./kgb.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&amp;display=block">
+<style>
+body{margin:0}
+a{color:#4340d2}a:hover{color:#2f2ca6}
+</style>
+</helmet>
+<div class="board" style="width:2720px;height:1100px">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div>
+<p class="tl">{{t.name}}</p>
+<div class="kgb {{t.cls}}" style="width:1280px;height:988px">
+<header class="hdr">
+<span class="logo"><span class="mi s16" aria-hidden="true">hub</span></span>
+<span class="appn">Knowledge Graph Builder</span>
+<span class="rootchip"><span class="mi s14" aria-hidden="true">folder_open</span>my-notes</span>
+<span class="grow"></span>
+<a class="nav on" href="#settings" aria-current="page"><span class="mi s16" aria-hidden="true">settings</span>Settings</a>
+<button class="btn i" aria-label="{{t.tl}}"><span class="mi" aria-hidden="true">{{t.ti}}</span></button>
+</header>
+<div style="flex:1;overflow:hidden;padding:20px 24px">
+<div style="max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:14px">
+<div class="col" style="gap:4px"><a class="btn tx sm" style="align-self:flex-start;padding-left:2px" href="#workspace"><span class="mi s16" aria-hidden="true">arrow_back</span>Workspace</a><h1 style="margin:0;font-weight:500;font-size:22px;line-height:28px">Settings</h1></div>
+
+<section class="card" aria-labelledby="s-root">
+<h2 class="ch" id="s-root"><span class="mi" aria-hidden="true">folder_open</span>Knowledge root</h2>
+<div>
+<label class="lbl" for="root">Folder</label>
+<div class="row"><input id="root" class="in mono grow" value="C:\Users\me\Documents\my-notes" aria-describedby="root-help"><button class="btn o"><span class="mi s16" aria-hidden="true">folder_open</span>Browse…</button><button class="btn p">Apply</button></div>
+<div class="help" id="root-help"><span class="mi s14 ts" aria-hidden="true">check_circle</span>5 pages in 3 folders. Changing the folder reloads the tree and resets the chat.</div>
+</div>
+</section>
+
+<section class="card" aria-labelledby="s-ai">
+<h2 class="ch" id="s-ai"><span class="mi" aria-hidden="true">smart_toy</span>AI provider</h2>
+<div class="fgrid">
+<div><label class="lbl" for="prov">Provider</label><button id="prov" class="in dd" aria-haspopup="listbox"><span>Anthropic</span><span class="mi t3" aria-hidden="true">expand_more</span></button></div>
+<div><label class="lbl" for="model">Model</label><input id="model" class="in mono" value="claude-sonnet-5-5"></div>
+<div style="grid-column:1 / -1">
+<span class="lbl">API key</span>
+<div class="row"><div class="kv grow" style="border-style:solid;background:var(--panel)"><span class="bdg b-su"><span class="mi" aria-hidden="true">key</span>Configured</span><span class="sm t3">Stored in Windows Credential Manager. Never shown.</span></div><button class="btn o"><span class="mi s16" aria-hidden="true">sync_lock</span>Replace…</button></div>
+<div class="help"><span class="mi s14" aria-hidden="true">info</span>An Endpoint field appears here for Azure OpenAI and Ollama.</div>
+</div>
+</div>
+<div class="callout in"><span class="mi s20" aria-hidden="true">shield</span><span>Page text the assistant reads is sent to the selected provider. Ollama keeps everything local.</span></div>
+</section>
+
+<section class="card" aria-labelledby="s-graph">
+<h2 class="ch" id="s-graph"><span class="mi" aria-hidden="true">hub</span>Graph</h2>
+<div class="row" style="gap:12px">
+<div class="stat"><span class="sm t2">Pages</span><b>5</b></div>
+<div class="stat"><span class="sm t2">Links</span><b>9</b></div>
+<div class="stat"><span class="sm t2">Unresolved links</span><b class="row" style="gap:6px">1<span class="mi s16 tw" aria-hidden="true">link_off</span></b></div>
+</div>
+<div class="row"><button class="btn o"><span class="mi s16" aria-hidden="true">autorenew</span>Rebuild graph</button><span class="sm t2 row" style="gap:4px" role="status"><span class="mi s16 ts" aria-hidden="true">check_circle</span>Rebuilt just now: 5 pages, 9 links in 0.2 s.</span></div>
+</section>
+
+<section class="card" aria-labelledby="s-app">
+<h2 class="ch" id="s-app"><span class="mi" aria-hidden="true">contrast</span>Appearance</h2>
+<div class="row"><span class="grow">Theme</span><span class="sm t2">{{t.mode}}</span><button class="btn o"><span class="mi s16" aria-hidden="true">{{t.ti}}</span>{{t.tl}}</button></div>
+</section>
+</div>
+</div>
+</div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2720,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { themes: [{ cls: 'light', name: 'Light', mode: 'Light', ti: 'dark_mode', tl: 'Switch to dark theme' }, { cls: 'dark', name: 'Dark', mode: 'Dark', ti: 'light_mode', tl: 'Switch to light theme' }] };
+  }
+}
+</script>
+</body>
+</html>

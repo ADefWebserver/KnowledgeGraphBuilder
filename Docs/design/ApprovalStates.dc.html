@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Approval card states</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./kgb.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&amp;display=block">
+<style>
+body{margin:0}
+a{color:#4340d2}a:hover{color:#2f2ca6}
+</style>
+</helmet>
+<div class="board" style="width:2880px;height:1752px">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div>
+<p class="tl">{{t.name}}</p>
+<div class="sheet {{t.cls}}" style="width:1360px;height:1640px;display:flex;flex-direction:column;gap:28px">
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;align-items:start">
+
+<div class="col" style="gap:12px">
+<p class="cap" style="margin:0">Pending · Update page (unified diff, folded context)</p>
+<article class="ac">
+<div class="ach"><span class="bdg b-in"><span class="mi" aria-hidden="true">edit_note</span>Update page</span><span class="acp ell grow">Getting Started/Linking Pages.md</span><span class="bdg b-ne"><span class="mi" aria-hidden="true">schedule</span>Pending</span><button class="btn sm i" aria-label="Open diff full screen"><span class="mi s16" aria-hidden="true">open_in_full</span></button></div>
+<div class="acm"><span class="ts b">+2</span><span class="td b">−1</span><span>1 change · 22 lines</span></div>
+<div class="diff">
+<button class="fold" style="width:100%;border-left:0;border-right:0;border-top:0"><span class="mi s16" aria-hidden="true">unfold_more</span>Show 17 unchanged lines</button>
+<div class="dl"><span class="n">18</span><span class="n">18</span><span class="s"> </span><span class="x">## What's next</span></div>
+<div class="dl"><span class="n">19</span><span class="n">19</span><span class="s"> </span><span class="x"></span></div>
+<div class="dl rm"><span class="n">20</span><span class="n"></span><span class="s">−</span><span class="x">See the [[Roadmap]] for planned features.</span></div>
+<div class="dl add"><span class="n"></span><span class="n">20</span><span class="s">+</span><span class="x">See the [[Roadmap]] for planned features and</span></div>
+<div class="dl add"><span class="n"></span><span class="n">21</span><span class="s">+</span><span class="x">[[Getting Started/FAQ]] for common questions.</span></div>
+<div class="dl"><span class="n">21</span><span class="n">22</span><span class="s"> </span><span class="x"></span></div>
+</div>
+<div class="acf"><span class="grow"></span><button class="btn sm o"><span class="mi s16" aria-hidden="true">close</span>Reject</button><button class="btn sm p"><span class="mi s16" aria-hidden="true">check</span>Apply</button></div>
+</article>
+
+<p class="cap" style="margin:6px 0 0">Approved · waiting for the others</p>
+<article class="ac">
+<div class="ach"><span class="bdg b-pr"><span class="mi" aria-hidden="true">note_add</span>Create page</span><span class="acp ell grow">Getting Started/FAQ.md</span><span class="bdg b-pr"><span class="mi" aria-hidden="true">check</span>Approved</span></div>
+<div class="acmsg"><span class="mi s16 tp" aria-hidden="true">hourglass_top</span><span class="grow">Will be written when the remaining change is decided.</span><button class="btn sm tx">Undo</button></div>
+</article>
+
+<p class="cap" style="margin:6px 0 0">Applied</p>
+<article class="ac">
+<div class="ach"><span class="bdg b-pr"><span class="mi" aria-hidden="true">note_add</span>Create page</span><span class="acp ell grow">Getting Started/FAQ.md</span><span class="bdg b-su"><span class="mi" aria-hidden="true">check_circle</span>Applied</span></div>
+<div class="acmsg"><span class="mi s16 ts" aria-hidden="true">done</span><span class="grow">Created. 13 lines written.</span><button class="btn sm tx">Show diff</button><button class="btn sm o"><span class="mi s16" aria-hidden="true">open_in_new</span>Open page</button></div>
+</article>
+
+<p class="cap" style="margin:6px 0 0">Pending · Create folder (no diff)</p>
+<article class="ac">
+<div class="ach"><span class="bdg b-pr"><span class="mi" aria-hidden="true">create_new_folder</span>Create folder</span><span class="acp ell grow">Projects/Beta/</span><span class="bdg b-ne"><span class="mi" aria-hidden="true">schedule</span>Pending</span></div>
+<div class="acmsg"><span class="mi s16 t3" aria-hidden="true">folder</span><span>Creates an empty folder inside <span class="mono">Projects</span>.</span></div>
+<div class="acf"><span class="grow"></span><button class="btn sm o"><span class="mi s16" aria-hidden="true">close</span>Reject</button><button class="btn sm p"><span class="mi s16" aria-hidden="true">check</span>Apply</button></div>
+</article>
+</div>
+
+<div class="col" style="gap:12px">
+<p class="cap" style="margin:0">Rejected</p>
+<article class="ac">
+<div class="ach"><span class="bdg b-pr"><span class="mi" aria-hidden="true">note_add</span>Create page</span><span class="acp ell grow t3">Roadmap.md</span><span class="bdg b-ne"><span class="mi" aria-hidden="true">block</span>Rejected</span></div>
+<div class="acmsg"><span class="mi s16 t3" aria-hidden="true">block</span><span class="grow">Not written. The assistant was told you rejected it.</span><button class="btn sm tx">Show diff</button></div>
+</article>
+
+<p class="cap" style="margin:6px 0 0">Not applied · page changed (conflict)</p>
+<article class="ac">
+<div class="ach"><span class="bdg b-in"><span class="mi" aria-hidden="true">edit_note</span>Update page</span><span class="acp ell grow">Getting Started/Install.md</span><span class="bdg b-wa"><span class="mi" aria-hidden="true">warning</span>Not applied</span></div>
+<div style="padding:10px">
+<div class="callout wa"><span class="mi s16" aria-hidden="true">warning</span><span><b>This page changed after the proposal.</b> Install.md was edited at 14:32 (in the app or on disk), so nothing was written to avoid losing those edits.</span></div>
+</div>
+<div class="acf"><button class="btn sm tx">Show diff</button><span class="grow"></span><button class="btn sm o"><span class="mi s16" aria-hidden="true">open_in_new</span>Open current page</button><button class="btn sm o"><span class="mi s16" aria-hidden="true">refresh</span>Ask again</button></div>
+</article>
+
+<p class="cap" style="margin:6px 0 0">Cancelled · user pressed Stop</p>
+<article class="ac">
+<div class="ach"><span class="bdg b-pr"><span class="mi" aria-hidden="true">note_add</span>Create page</span><span class="acp ell grow t3">Roadmap.md</span><span class="bdg b-ne"><span class="mi" aria-hidden="true">cancel</span>Cancelled</span></div>
+<div class="acmsg"><span class="mi s16 t3" aria-hidden="true">stop_circle</span><span class="grow">You stopped the response before deciding. Nothing was written.</span><button class="btn sm tx">Show diff</button></div>
+</article>
+
+<p class="cap" style="margin:6px 0 0">Superseded · new message sent</p>
+<article class="ac">
+<div class="ach"><span class="bdg b-pr"><span class="mi" aria-hidden="true">note_add</span>Create page</span><span class="acp ell grow t3">Getting Started/FAQ.md</span><span class="bdg b-ne"><span class="mi" aria-hidden="true">redo</span>Superseded</span></div>
+<div class="acmsg"><span class="mi s16 t3" aria-hidden="true">redo</span><span class="grow">You sent a new message instead of deciding. Nothing was written.</span><button class="btn sm tx">Show diff</button></div>
+</article>
+</div>
+
+<div class="col" style="gap:12px">
+<p class="cap" style="margin:0">Sticky decision bar · partway</p>
+<div class="sbar" style="box-shadow:none">
+<span class="mi s20 tp" aria-hidden="true">rule</span>
+<div class="col" style="gap:4px"><span class="sm b">2 of 3 decided</span><span class="pbar" role="progressbar" aria-valuenow="2" aria-valuemax="3" aria-label="Decided"><i style="width:66%"></i></span></div>
+<span class="grow"></span>
+<button class="btn sm o"><span class="mi s16" aria-hidden="true">close</span>Reject all</button>
+<button class="btn sm p"><span class="mi s16" aria-hidden="true">done_all</span>Apply all</button>
+</div>
+<p class="sm t3" style="margin:0">“Reject all” and “Apply all” act only on cards still pending. The bar disappears once every card is decided, and the stream resumes.</p>
+
+<p class="cap" style="margin:10px 0 0">After apply · Pages changed note</p>
+<div style="background:var(--panel);border:1px solid var(--bd);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:10px">
+<div class="note" role="status"><span class="mi s16" aria-hidden="true">published_with_changes</span><div class="grow"><b>Pages changed</b><div>Created <a class="cite"><span class="mi" aria-hidden="true">description</span>Getting Started/FAQ</a> and <a class="cite"><span class="mi" aria-hidden="true">description</span>Roadmap</a></div></div></div>
+<div class="ma"><div class="who">Assistant</div><p>Both pages are in place. <a class="cite"><span class="mi" aria-hidden="true">description</span>Roadmap</a> also resolves the link from <a class="cite"><span class="mi" aria-hidden="true">description</span>Getting Started/Linking Pages</a>.</p></div>
+</div>
+
+<p class="cap" style="margin:10px 0 0">Explorer after apply</p>
+<div class="pane" style="border:1px solid var(--bd);border-radius:8px;overflow:hidden">
+<div class="tree" role="tree" aria-label="Pages">
+<div class="tr" style="--d:0"><span class="mi chev" aria-hidden="true">expand_more</span><span class="mi" aria-hidden="true">folder_open</span><span class="ell">Getting Started</span></div>
+<div class="tr new" style="--d:1"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">FAQ</span><span class="bdg b-su" style="height:18px"><span class="mi" aria-hidden="true">add</span>New</span></div>
+<div class="tr" style="--d:1"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Install</span></div>
+<div class="tr" style="--d:1"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Linking Pages</span></div>
+<div class="tr" style="--d:1"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Using Chat</span></div>
+<div class="tr" style="--d:0"><span class="mi chev" aria-hidden="true">chevron_right</span><span class="mi" aria-hidden="true">folder</span><span class="ell">Projects</span></div>
+<div class="tr new" style="--d:0"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Roadmap</span><span class="bdg b-su" style="height:18px"><span class="mi" aria-hidden="true">add</span>New</span></div>
+<div class="tr" style="--d:0"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Welcome</span></div>
+</div>
+</div>
+<p class="sm t3" style="margin:0">The New badge fades after the page is opened or after the session ends. Selection doesn't move.</p>
+</div>
+</div>
+
+<div class="col" style="gap:12px">
+<p class="cap" style="margin:0">Expanded to full screen (RadzenDialog over the workspace)</p>
+<div class="scrim" style="border-radius:10px;padding:28px;border:1px solid var(--bd)">
+<div class="dlg" style="width:100%" role="dialog" aria-label="Diff for Getting Started/Linking Pages.md">
+<div class="dlgh" style="padding-bottom:10px;border-bottom:1px solid var(--bd)"><span class="bdg b-in"><span class="mi" aria-hidden="true">edit_note</span>Update page</span><span class="acp" style="font-size:13px">Getting Started/Linking Pages.md</span><span class="bdg b-ne"><span class="mi" aria-hidden="true">schedule</span>Pending</span><span class="grow"></span><span class="sm t3" style="font-weight:400"><span class="ts b">+2</span> <span class="td b">−1</span></span><button class="btn sm o"><span class="mi s16" aria-hidden="true">unfold_more</span>Show all lines</button><button class="btn i" aria-label="Close (Esc)"><span class="mi" aria-hidden="true">close</span></button></div>
+<div class="diff" style="max-height:none">
+<div class="dl wide"><span class="n">12</span><span class="n">12</span><span class="s"> </span><span class="x">- [[Getting Started/Using Chat]] — a folder path</span></div>
+<div class="dl wide"><span class="n">13</span><span class="n">13</span><span class="s"> </span><span class="x">- [[Welcome#Next steps]] — a page and a heading</span></div>
+<div class="dl wide"><span class="n">14</span><span class="n">14</span><span class="s"> </span><span class="x">- [[Overview|the Alpha project]] — display text</span></div>
+<button class="fold" style="width:100%;border-left:0;border-right:0;height:28px"><span class="mi s16" aria-hidden="true">unfold_more</span>Show 3 unchanged lines (15–17)</button>
+<div class="dl wide"><span class="n">18</span><span class="n">18</span><span class="s"> </span><span class="x">## What's next</span></div>
+<div class="dl wide"><span class="n">19</span><span class="n">19</span><span class="s"> </span><span class="x"></span></div>
+<div class="dl wide rm"><span class="n">20</span><span class="n"></span><span class="s">−</span><span class="x">See the [[Roadmap]] for planned features.</span></div>
+<div class="dl wide add"><span class="n"></span><span class="n">20</span><span class="s">+</span><span class="x">See the [[Roadmap]] for planned features and</span></div>
+<div class="dl wide add"><span class="n"></span><span class="n">21</span><span class="s">+</span><span class="x">[[Getting Started/FAQ]] for common questions.</span></div>
+<div class="dl wide"><span class="n">21</span><span class="n">22</span><span class="s"> </span><span class="x"></span></div>
+</div>
+<div class="dlgf" style="border-top:1px solid var(--bd)"><span class="xs t3 grow">Esc closes · decisions here and in the card stay in sync</span><button class="btn o"><span class="mi s16" aria-hidden="true">close</span>Reject</button><button class="btn p"><span class="mi s16" aria-hidden="true">check</span>Apply</button></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2880,"height":1752}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { themes: [{ cls: 'light', name: 'Light' }, { cls: 'dark', name: 'Dark' }] };
+  }
+}
+</script>
+</body>
+</html>

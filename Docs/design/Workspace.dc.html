@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Workspace, desktop</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./kgb.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&amp;display=block">
+<style>
+body{margin:0}
+a{color:#4340d2}a:hover{color:#2f2ca6}
+</style>
+</helmet>
+<div class="board" style="width:3040px;height:1012px">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div>
+<p class="tl">{{t.name}}</p>
+<div class="kgb {{t.cls}}" style="width:1440px;height:900px">
+<header class="hdr">
+<span class="logo"><span class="mi s16" aria-hidden="true">hub</span></span>
+<span class="appn">Knowledge Graph Builder</span>
+<span class="rootchip" title="C:\Users\me\Documents\my-notes"><span class="mi s14" aria-hidden="true">folder_open</span>my-notes</span>
+<span class="grow"></span>
+<a class="nav" href="#settings"><span class="mi s16" aria-hidden="true">settings</span>Settings</a>
+<button class="btn i" aria-label="{{t.tl}}"><span class="mi" aria-hidden="true">{{t.ti}}</span></button>
+</header>
+<div class="split">
+<section class="pane" style="width:272px;flex:none" aria-label="Explorer">
+<div class="ph"><span class="pt">Explorer</span><span class="grow"></span>
+<button class="btn sm i" aria-label="New page" title="New page"><span class="mi s16" aria-hidden="true">note_add</span></button>
+<button class="btn sm i" aria-label="New folder" title="New folder"><span class="mi s16" aria-hidden="true">create_new_folder</span></button>
+<button class="btn sm i" aria-label="Refresh" title="Refresh"><span class="mi s16" aria-hidden="true">refresh</span></button>
+<button class="btn sm i" aria-label="Collapse all" title="Collapse all"><span class="mi s16" aria-hidden="true">unfold_less</span></button>
+</div>
+<div style="padding:8px 8px 4px"><div class="search"><span class="mi s16" aria-hidden="true">search</span><input class="in" placeholder="Search pages" aria-label="Search pages"></div></div>
+<div class="tree" role="tree" aria-label="Pages">
+<div class="tr" role="treeitem" aria-expanded="true" style="--d:0"><span class="mi chev" aria-hidden="true">expand_more</span><span class="mi" aria-hidden="true">folder_open</span><span class="ell">Getting Started</span></div>
+<div class="tr" role="treeitem" style="--d:1"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Install</span></div>
+<div class="tr sel" role="treeitem" aria-selected="true" style="--d:1"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Linking Pages</span><span class="dot" role="img" aria-label="Unsaved changes" title="Unsaved changes"></span></div>
+<div class="tr" role="treeitem" style="--d:1"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Using Chat</span></div>
+<div class="tr" role="treeitem" aria-expanded="true" style="--d:0"><span class="mi chev" aria-hidden="true">expand_more</span><span class="mi" aria-hidden="true">folder_open</span><span class="ell">Projects</span></div>
+<div class="tr" role="treeitem" aria-expanded="true" style="--d:1"><span class="mi chev" aria-hidden="true">expand_more</span><span class="mi" aria-hidden="true">folder_open</span><span class="ell">Alpha</span></div>
+<div class="tr" role="treeitem" style="--d:2"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Overview</span></div>
+<div class="tr" role="treeitem" style="--d:0"><span class="sp"></span><span class="mi" aria-hidden="true">description</span><span class="ell grow">Welcome</span></div>
+</div>
+</section>
+<div class="gut" aria-hidden="true"></div>
+<main class="pane grow" aria-label="Editor" style="background:var(--bg)">
+<div class="eh" style="background:var(--panel)">
+<div class="col grow" style="gap:1px">
+<div class="row" style="gap:6px"><h1 class="etitle" style="margin:0">Linking Pages</h1><span class="dot" role="img" aria-label="Unsaved changes" title="Unsaved changes"></span><span class="sm t3">Unsaved</span></div>
+<nav class="crumb" aria-label="Path"><span>my-notes</span><span class="mi s14" aria-hidden="true">chevron_right</span><span>Getting Started</span><span class="mi s14" aria-hidden="true">chevron_right</span><span>Linking Pages.md</span></nav>
+</div>
+<button class="btn tx sm" title="Revert to the file on disk"><span class="mi s16" aria-hidden="true">undo</span>Revert</button>
+<button class="btn p sm" title="Save (Ctrl+S)"><span class="mi s16" aria-hidden="true">save</span>Save<span class="xs" style="opacity:.8">Ctrl+S</span></button>
+<div class="seg" role="radiogroup" aria-label="Editor mode"><button class="on" role="radio" aria-checked="true">Design</button><button role="radio" aria-checked="false">Source</button><button role="radio" aria-checked="false"><span class="mi s16" aria-hidden="true">visibility</span>Preview</button></div>
+</div>
+<div class="propbox">
+<div class="prophd"><span class="mi s16" aria-hidden="true">expand_more</span>Properties<span class="t3 mono" style="font-weight:400">front-matter</span></div>
+<pre class="yaml"><span class="yk">title</span>: Linking Pages
+<span class="yk">tags</span>:
+  - guide
+<span class="yk">aliases</span>:
+  - Links
+<span class="yk">updated</span>: 2026-10-28</pre>
+</div>
+<div class="mdtb" role="toolbar" aria-label="Formatting">
+<button class="btn sm i" aria-label="Bold"><span class="mi s16" aria-hidden="true">format_bold</span></button>
+<button class="btn sm i" aria-label="Italic"><span class="mi s16" aria-hidden="true">format_italic</span></button>
+<button class="btn sm i" aria-label="Heading"><span class="mi s16" aria-hidden="true">title</span></button>
+<span class="vs"></span>
+<button class="btn sm i" aria-label="Bulleted list"><span class="mi s16" aria-hidden="true">format_list_bulleted</span></button>
+<button class="btn sm i" aria-label="Numbered list"><span class="mi s16" aria-hidden="true">format_list_numbered</span></button>
+<button class="btn sm i" aria-label="Quote"><span class="mi s16" aria-hidden="true">format_quote</span></button>
+<button class="btn sm i" aria-label="Code"><span class="mi s16" aria-hidden="true">code</span></button>
+<span class="vs"></span>
+<button class="btn sm i" aria-label="Link"><span class="mi s16" aria-hidden="true">link</span></button>
+<button class="btn sm" aria-label="Insert wiki link"><span class="mi s16" aria-hidden="true">data_array</span>Wiki link</button>
+</div>
+<div class="mdbody" aria-label="Page content">
+<h1>Linking Pages</h1>
+<p>Connect pages with wiki links. Type two square brackets and start typing a page name; the app suggests matching titles and aliases.</p>
+<h2>Four link forms</h2>
+<ul>
+<li><a class="wl">Install</a> <span class="t3">— a bare page name</span> <code>[[Install]]</code></li>
+<li><a class="wl">Getting Started/Using Chat</a> <span class="t3">— a folder path</span> <code>[[Getting Started/Using Chat]]</code></li>
+<li><a class="wl">Welcome › Next steps</a> <span class="t3">— a page and a heading</span> <code>[[Welcome#Next steps]]</code></li>
+<li><a class="wl">the Alpha project</a> <span class="t3">— display text</span> <code>[[Overview|the Alpha project]]</code></li>
+</ul>
+<h2>What's next</h2>
+<p>See the <a class="wu" title="No page yet. Click to create."><span class="mi" aria-hidden="true">link_off</span>Roadmap</a> for planned features.</p>
+</div>
+<section class="lp" aria-label="Links">
+<div class="lph"><span class="mi s16" aria-hidden="true">expand_more</span>Links<span class="grow"></span><span class="t3" style="font-weight:400">Updated on save</span></div>
+<div class="lpc">
+<div>
+<div class="row sm b t2"><span class="mi s16" aria-hidden="true">arrow_outward</span>Outgoing<span class="cnt">4</span></div>
+<div class="li"><span class="mi s14 t3" aria-hidden="true">description</span><a class="wl ell">Install</a></div>
+<div class="li"><span class="mi s14 t3" aria-hidden="true">description</span><a class="wl ell">Getting Started/Using Chat</a></div>
+<div class="li"><span class="mi s14 t3" aria-hidden="true">description</span><a class="wl ell">Welcome › Next steps</a></div>
+<div class="li"><span class="mi s14 t3" aria-hidden="true">description</span><a class="wl ell">Alpha Project</a></div>
+</div>
+<div>
+<div class="row sm b t2"><span class="mi s16" aria-hidden="true">call_received</span>Backlinks<span class="cnt">2</span></div>
+<div class="li"><a class="wl">Welcome</a><span class="mono t3" style="font-size:11px">line 12</span></div>
+<div class="sm t3 ell" style="padding-left:2px">…then read [[Linking Pages]] to connect…</div>
+<div class="li"><a class="wl">Using Chat</a><span class="mono t3" style="font-size:11px">line 8</span></div>
+<div class="sm t3 ell" style="padding-left:2px">…citations use the same [[Linking Pages]]…</div>
+</div>
+<div>
+<div class="row sm b t2"><span class="mi s16" aria-hidden="true">link_off</span>Unresolved<span class="cnt">1</span></div>
+<div class="li"><span class="wu"><span class="mi" aria-hidden="true">link_off</span>Roadmap</span><span class="mono t3" style="font-size:11px">line 21</span><span class="grow"></span><button class="btn sm o"><span class="mi s16" aria-hidden="true">note_add</span>Create page</button></div>
+</div>
+</div>
+</section>
+</main>
+<div class="gut" aria-hidden="true"></div>
+<aside class="pane" style="width:420px;flex:none" aria-label="Chat">
+<div class="ph"><span class="pt">Chat</span><span class="chip" style="margin-left:6px" title="Provider and model, set in Settings"><span class="mi s14" aria-hidden="true">smart_toy</span>Anthropic · claude-sonnet-5-5</span><span class="grow"></span><button class="btn sm o"><span class="mi s16" aria-hidden="true">add_comment</span>New chat</button></div>
+<div class="msgs" role="log" aria-live="polite">
+<div class="mu"><div class="who">You</div>How do I install it?</div>
+<div class="col" style="gap:3px">
+<div class="tool"><span class="mi" aria-hidden="true">search</span><span class="fn">search_pages</span><span>query=install</span><span class="grow"></span><span class="mi ts" aria-label="done">check</span></div>
+<div class="tool"><span class="mi" aria-hidden="true">article</span><span class="fn">read_page</span><span>Getting Started/Install</span><span class="grow"></span><span class="mi ts" aria-label="done">check</span></div>
+</div>
+<div class="ma"><div class="who">Assistant</div><p>Two pages cover installation. Start with <a class="cite"><span class="mi" aria-hidden="true">description</span>Getting Started/Install</a>, and see <a class="cite"><span class="mi" aria-hidden="true">description</span>Welcome</a> for an overview. I can add an FAQ page if you like.</p></div>
+<div class="mu"><div class="who">You</div>What do I need before I start?</div>
+<div class="col" style="gap:3px">
+<div class="tool"><span class="mi" aria-hidden="true">article</span><span class="fn">read_page</span><span>Getting Started/Install</span><span class="grow"></span><span class="mi ts" aria-label="done">check</span></div>
+</div>
+<div class="ma"><div class="who row" style="gap:6px">Assistant<span class="typing" aria-label="Assistant is responding"><i></i><i></i><i></i></span></div><p><a class="cite"><span class="mi" aria-hidden="true">description</span>Getting Started/Install</a> lists one prerequisite: the .NET SDK. The page links to the download at <span class="ext"><span class="mi" aria-hidden="true">link</span> https://dotnet.microsoft.com/download</span> — copy it into your browser. After that, the page walks through choosing a knowledge<span class="caret" aria-hidden="true"></span></p></div>
+</div>
+<div class="comp">
+<textarea class="ta" aria-label="Message" placeholder="Ask about your pages…"></textarea>
+<div class="row" style="margin-top:6px"><span class="xs t3">Enter to send · Shift+Enter for a new line</span><span class="grow"></span><button class="btn sm o" style="color:var(--da);border-color:var(--da)" title="Stop (Esc)"><span class="mi s16 f" aria-hidden="true">stop_circle</span>Stop</button></div>
+</div>
+</aside>
+</div>
+</div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":3040,"height":1012}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { themes: [{ cls: 'light', name: 'Light', ti: 'dark_mode', tl: 'Switch to dark theme' }, { cls: 'dark', name: 'Dark', ti: 'light_mode', tl: 'Switch to light theme' }] };
+  }
+}
+</script>
+</body>
+</html>

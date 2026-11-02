@@ -1,0 +1,473 @@
+@implements IDisposable
+@inject IKnowledgeWorkspace Workspace
+@inject DialogService Dialogs
+@inject NotificationService Notify
+@inject ContextMenuService ContextMenu
+@inject WorkspaceState State
+@inject IHostCapabilities Host
+@inject IServiceProvider Services
+
+<section class="kgb-pane kgb-explorer" aria-label="Explorer">
+    <div class="kgb-ph">
+        <span class="kgb-pt grow">Explorer</span>
+        <RadzenButton Icon="note_add" Variant="Variant.Text" ButtonStyle="ButtonStyle.Base" Size="ButtonSize.Small" title="New page" aria-label="New page" Click="@(() => NewPageAsync(TargetFolder()))" />
+        <RadzenButton Icon="create_new_folder" Variant="Variant.Text" ButtonStyle="ButtonStyle.Base" Size="ButtonSize.Small" title="New folder" aria-label="New folder" Click="@(() => NewFolderAsync(TargetFolder()))" />
+        <RadzenButton Icon="refresh" Variant="Variant.Text" ButtonStyle="ButtonStyle.Base" Size="ButtonSize.Small" title="Refresh" aria-label="Refresh" Click="@RefreshAsync" />
+        <RadzenButton Icon="unfold_less" Variant="Variant.Text" ButtonStyle="ButtonStyle.Base" Size="ButtonSize.Small" title="Collapse all" aria-label="Collapse all" Click="@CollapseAll" />
+    </div>
+    <div class="kgb-search" @onkeydown="@OnSearchKeyDown">
+        <RadzenTextBox Placeholder="Search pages" Value="@query" @oninput="@OnSearchInput" Style="width:100%" aria-label="Search pages" />
+    </div>
+    <div class="kgb-scroll" @onkeydown="@OnTreeKeyDown">
+        @if (!string.IsNullOrWhiteSpace(query))
+        {
+            @if (searching && hits is null)
+            {
+                <div style="padding:8px;display:flex;flex-direction:column;gap:8px">
+                    @for (var i = 0; i < 4; i++) { <div class="kgb-sk" style="width:@(60 + i * 9)%"></div> }
+                </div>
+            }
+            else if (hits is { Count: 0 })
+            {
+                <div class="kgb-empty sm"><span class="mi s20" aria-hidden="true">search_off</span>No pages match “@query”.</div>
+            }
+            else if (hits is not null)
+            {
+                <div role="list" style="padding:4px 6px">
+                    <div class="xs t3" style="padding:2px 8px 4px">@hits.Count results · Esc clears</div>
+                    @foreach (var hit in hits)
+                    {
+                        <button role="listitem" class="kgb-sr" @onclick="@(() => OpenAsync(hit.Path))">
+                            <span class="b ell" style="font-weight:500">@Highlight(hit.Title)</span>
+                            <span class="mono xs t3 ell">@hit.Path</span>
+                            <span class="xs t2">@Highlight(hit.Snippet)</span>
+                        </button>
+                    }
+                </div>
+            }
+        }
+        else if (!loaded)
+        {
+            <div style="padding:10px;display:flex;flex-direction:column;gap:10px" aria-busy="true">
+                @for (var i = 0; i < 7; i++) { <div class="kgb-sk" style="width:@(40 + (i * 13) % 50)%;margin-left:@((i % 3) * 14)px"></div> }
+            </div>
+        }
+        else
+        {
+            <RadzenTree Value="@SelectedPath" Change="@OnChange" Expand="@OnExpand" Collapse="@OnCollapse" AriaLabel="Pages and folders" Style="width:100%">
+                @RenderNodes("")
+            </RadzenTree>
+            @if (children.TryGetValue("", out var roots) && roots.Count == 0)
+            {
+                <div class="kgb-empty sm">The knowledge root is empty.</div>
+            }
+            <div class="kgb-root-drop @(dropTarget == "" ? "drop" : "")"
+                 @ondragover="@(() => OnDragOver(""))" @ondragover:preventDefault="true"
+                 @ondragleave="@(() => OnDragLeave(""))" @ondrop="@(() => OnDropAsync(""))" @ondrop:preventDefault="true">
+                @if (dragSource is not null) { <span><span class="mi s14" aria-hidden="true">drive_file_move</span> Drop here to move to the root</span> }
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    [Parameter] public string? SelectedPath { get; set; }
+    [Parameter] public EventCallback<string> OnOpen { get; set; }
+
+    readonly Dictionary<string, List<KnowledgeNode>> children = new(StringComparer.OrdinalIgnoreCase);
+    readonly Dictionary<string, KnowledgeNode> nodes = new(StringComparer.OrdinalIgnoreCase);
+    bool loaded;
+    string query = "";
+    bool searching;
+    IReadOnlyList<SearchHit>? hits;
+    CancellationTokenSource? searchCts;
+    string? dragSource;
+    string? dropTarget;
+    string? lastSelected;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Workspace.Changed += OnWorkspaceChanged;
+        State.Changed += OnStateChanged;
+        await LoadAsync("");
+        foreach (var folder in State.ExpandedFolders.OrderBy(f => f.Length).ToList())
+        {
+            try { await LoadAsync(folder); }
+            catch (KnowledgeException) { State.ExpandedFolders.Remove(folder); }
+        }
+        loaded = true;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (SelectedPath is null || SelectedPath == lastSelected) return;
+        lastSelected = SelectedPath;
+        // Reveal the selected page: expand its ancestors.
+        var parts = SelectedPath.Split('/');
+        var folder = "";
+        for (var i = 0; i < parts.Length - 1; i++)
+        {
+            folder = folder.Length == 0 ? parts[i] : folder + "/" + parts[i];
+            State.ExpandedFolders.Add(folder);
+            try { await LoadAsync(folder); } catch (KnowledgeException) { }
+        }
+    }
+
+    async Task LoadAsync(string folder)
+    {
+        var list = (await Workspace.GetChildrenAsync(folder)).ToList();
+        children[folder] = list;
+        foreach (var n in list) nodes[n.Path] = n;
+    }
+
+    async Task RefreshAsync()
+    {
+        var folders = children.Keys.ToList();
+        children.Clear();
+        await LoadAsync("");
+        foreach (var f in folders.Where(f => f.Length > 0 && State.ExpandedFolders.Contains(f)).OrderBy(f => f.Length))
+        {
+            try { await LoadAsync(f); }
+            catch (KnowledgeException) { State.ExpandedFolders.Remove(f); }
+        }
+        if (!string.IsNullOrWhiteSpace(query)) await RunSearchAsync(query, CancellationToken.None);
+    }
+
+    void OnWorkspaceChanged(KnowledgeChange change) => _ = InvokeAsync(async () =>
+    {
+        if (change.Kind is ChangeKind.Renamed or ChangeKind.Moved && change.OldPath is not null)
+        {
+            foreach (var f in State.ExpandedFolders.ToList())
+            {
+                if (string.Equals(f, change.OldPath, StringComparison.OrdinalIgnoreCase) || f.StartsWith(change.OldPath + "/", StringComparison.OrdinalIgnoreCase))
+                {
+                    State.ExpandedFolders.Remove(f);
+                    State.ExpandedFolders.Add(change.Path + f[change.OldPath.Length..]);
+                }
+            }
+        }
+        await RefreshAsync();
+        StateHasChanged();
+    });
+
+    void OnStateChanged() => _ = InvokeAsync(StateHasChanged);
+
+    string TargetFolder()
+    {
+        if (SelectedPath is null) return "";
+        if (nodes.TryGetValue(SelectedPath, out var n) && n.IsFolder) return n.Path;
+        return LinkResolver.FolderOf(SelectedPath);
+    }
+
+    RenderFragment RenderNodes(string folder) => __builder =>
+    {
+        if (!children.TryGetValue(folder, out var list)) return;
+        foreach (var node in list)
+        {
+            var expanded = node.IsFolder && State.ExpandedFolders.Contains(node.Path);
+            if (node.IsFolder)
+            {
+                <RadzenTreeItem @key="@node.Path" Value="@node.Path" Text="@node.Name" HasChildren="true" Expanded="@expanded" Template="@NodeTemplate">
+                    @if (expanded) { @RenderNodes(node.Path) }
+                </RadzenTreeItem>
+            }
+            else
+            {
+                <RadzenTreeItem @key="@node.Path" Value="@node.Path" Text="@node.Name" HasChildren="false" Template="@NodeTemplate" />
+            }
+        }
+    };
+
+    RenderFragment<RadzenTreeItem> NodeTemplate => item => __builder =>
+    {
+        var path = item.Value as string ?? "";
+        if (!nodes.TryGetValue(path, out var node)) return;
+        var css = "kgb-node" + (dragSource == path ? " dragging" : "") + (dropTarget == path ? (CanDrop(path) ? " drop" : " nodrop") : "");
+        <span class="@css" draggable="true" title="@(dropTarget == path && !CanDrop(path) ? DropError(path) : node.Path)"
+              @ondragstart="@(() => dragSource = path)" @ondragend="@(() => { dragSource = null; dropTarget = null; })"
+              @ondragover="@(() => OnDragOver(path))" @ondragover:preventDefault="true" @ondragleave="@(() => OnDragLeave(path))"
+              @ondrop="@(() => OnDropAsync(path))" @ondrop:preventDefault="true" @ondrop:stopPropagation="true"
+              @oncontextmenu="@(e => OpenMenu(e, node))" @oncontextmenu:preventDefault="true" @oncontextmenu:stopPropagation="true">
+            <span class="mi s16" aria-hidden="true">@(node.IsFolder ? (item.Expanded ? "folder_open" : "folder") : "description")</span>
+            <span class="ell grow">@(node.IsFolder ? node.Name : KnowledgePath.StripExtension(node.Name))</span>
+            @if (!node.IsFolder && State.IsUnsaved(node.Path))
+            {
+                <span class="dot" title="Unsaved changes"></span><span class="sr-only">unsaved</span>
+            }
+            @if (dropTarget == path)
+            {
+                <span class="mi s16" aria-hidden="true">@(CanDrop(path) ? "drive_file_move" : "block")</span>
+            }
+        </span>
+    };
+
+    async Task OnChange(Radzen.TreeEventArgs args)
+    {
+        if (args.Value is not string path || !nodes.TryGetValue(path, out var node)) return;
+        if (node.IsFolder)
+        {
+            // Selecting a folder toggles it.
+            if (!State.ExpandedFolders.Remove(path))
+            {
+                State.ExpandedFolders.Add(path);
+                await LoadAsync(path);
+            }
+            return;
+        }
+        await OpenAsync(path);
+    }
+
+    async Task OnExpand(TreeExpandEventArgs args)
+    {
+        if (args.Value is not string path) return;
+        State.ExpandedFolders.Add(path);
+        await LoadAsync(path);
+    }
+
+    void OnCollapse(TreeEventArgs args)
+    {
+        if (args.Value is string path) State.ExpandedFolders.Remove(path);
+    }
+
+    void CollapseAll() => State.ExpandedFolders.Clear();
+
+    async Task OpenAsync(string path)
+    {
+        await OnOpen.InvokeAsync(path);
+    }
+
+    // ------------------------------------------------------------ search
+
+    async Task OnSearchInput(ChangeEventArgs e)
+    {
+        query = e.Value?.ToString() ?? "";
+        searchCts?.Cancel();
+        if (string.IsNullOrWhiteSpace(query)) { hits = null; return; }
+        var cts = searchCts = new CancellationTokenSource();
+        searching = true;
+        try
+        {
+            await Task.Delay(200, cts.Token);
+            await RunSearchAsync(query, cts.Token);
+        }
+        catch (OperationCanceledException) { }
+    }
+
+    async Task RunSearchAsync(string q, CancellationToken ct)
+    {
+        hits = await Workspace.Graph.SearchAsync(q, 25, ct);
+        searching = false;
+    }
+
+    void OnSearchKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape") { query = ""; hits = null; searchCts?.Cancel(); }
+    }
+
+    MarkupString Highlight(string text)
+    {
+        var encoded = System.Net.WebUtility.HtmlEncode(text);
+        foreach (var term in query.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(t => System.Net.WebUtility.HtmlEncode(t)).Where(t => t.Length > 1))
+            encoded = System.Text.RegularExpressions.Regex.Replace(encoded, System.Text.RegularExpressions.Regex.Escape(term), m => "<mark>" + m.Value + "</mark>", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        return new MarkupString(encoded);
+    }
+
+    // ------------------------------------------------------------ keyboard and menu
+
+    async Task OnTreeKeyDown(KeyboardEventArgs e)
+    {
+        if (SelectedPath is null || !nodes.TryGetValue(SelectedPath, out var node)) return;
+        if (e.Key == "F2") await RenameAsync(node);
+        else if (e.Key == "Delete") await DeleteAsync(node);
+    }
+
+    void OpenMenu(MouseEventArgs e, KnowledgeNode node)
+    {
+        var folder = node.IsFolder ? node.Path : LinkResolver.FolderOf(node.Path);
+        var items = new List<ContextMenuItem>();
+        if (!node.IsFolder) items.Add(new ContextMenuItem { Text = "Open", Value = "open", Icon = "open_in_new" });
+        items.Add(new ContextMenuItem { Text = "New page here", Value = "newpage", Icon = "note_add" });
+        items.Add(new ContextMenuItem { Text = "New folder here", Value = "newfolder", Icon = "create_new_folder" });
+        items.Add(new ContextMenuItem { Text = "Rename (F2)", Value = "rename", Icon = "edit" });
+        items.Add(new ContextMenuItem { Text = "Move to…", Value = "move", Icon = "drive_file_move" });
+        items.Add(new ContextMenuItem { Text = "Delete (Del)", Value = "delete", Icon = "delete", IconColor = "var(--da)" });
+        ContextMenu.Open(e, items, async args =>
+        {
+            ContextMenu.Close();
+            await InvokeAsync(async () =>
+            {
+                switch (args.Value as string)
+                {
+                    case "open": await OpenAsync(node.Path); break;
+                    case "newpage": await NewPageAsync(folder); break;
+                    case "newfolder": await NewFolderAsync(folder); break;
+                    case "rename": await RenameAsync(node); break;
+                    case "move": await MoveAsync(node); break;
+                    case "delete": await DeleteAsync(node); break;
+                }
+                StateHasChanged();
+            });
+        });
+    }
+
+    // ------------------------------------------------------------ operations
+
+    async Task<IReadOnlyCollection<string>> SiblingNamesAsync(string folder)
+    {
+        try { return (await Workspace.GetChildrenAsync(folder)).Select(n => n.Name).ToList(); }
+        catch (KnowledgeException) { return []; }
+    }
+
+    public async Task NewPageAsync(string folder, string? initialName = null)
+    {
+        var path = await PageCommands.CreatePageAsync(Dialogs, Workspace, Notify, folder, initialName);
+        if (path is not null) await OpenAsync(path);
+    }
+
+    async Task NewFolderAsync(string parent)
+    {
+        var siblings = await SiblingNamesAsync(parent);
+        var name = await Dialogs.AskNameAsync("New folder", parent.Length == 0 ? "Folder name" : $"Folder name in {parent}", "Create", false, siblings);
+        if (name is null) return;
+        try
+        {
+            var path = KnowledgePath.Parse(parent.Length == 0 ? name : parent + "/" + name, isPage: false).Value;
+            await Workspace.CreateFolderAsync(path);
+            if (parent.Length > 0) State.ExpandedFolders.Add(parent);
+        }
+        catch (KnowledgeException ex) { ShowError(ex); }
+    }
+
+    async Task<bool> EnsureSavedAsync(KnowledgeNode node)
+    {
+        var affected = State.UnsavedPaths.Where(p => string.Equals(p, node.Path, StringComparison.OrdinalIgnoreCase)
+            || p.StartsWith(node.Path + "/", StringComparison.OrdinalIgnoreCase)).ToList();
+        if (affected.Count == 0) return true;
+        var r = await Dialogs.ChooseAsync("Save first?", "Some affected pages have unsaved changes. Save them before continuing?",
+            [new("Cancel", "cancel"), new("Save first", "save", ButtonStyle.Primary, Variant.Filled, Default: true)], "edit_note", "wa", affected);
+        if (r != "save") return false;
+        return State.SaveCurrentAsync is null || await State.SaveCurrentAsync();
+    }
+
+    async Task RenameAsync(KnowledgeNode node)
+    {
+        if (!await EnsureSavedAsync(node)) return;
+        var parent = LinkResolver.FolderOf(node.Path);
+        var siblings = await SiblingNamesAsync(parent);
+        var current = node.IsFolder ? node.Name : KnowledgePath.StripExtension(node.Name);
+        var name = await Dialogs.AskNameAsync(node.IsFolder ? "Rename folder" : "Rename page", "New name", "Rename", !node.IsFolder, siblings,
+            current, node.Name, "Links to it are updated in other pages.");
+        if (name is null || name == current) return;
+        await RunRelocateAsync(node, () => Workspace.RenameAsync(node.Path, name), "Renamed");
+    }
+
+    async Task MoveAsync(KnowledgeNode node)
+    {
+        if (!await EnsureSavedAsync(node)) return;
+        var target = await Dialogs.OpenAsync<MoveDialog>($"Move {node.Name}", new Dictionary<string, object?>
+        {
+            [nameof(MoveDialog.SourcePath)] = node.Path,
+            [nameof(MoveDialog.SourceIsFolder)] = node.IsFolder,
+        }, new DialogOptions { Width = "440px", CloseDialogOnEsc = true });
+        if (target is not string folder) return;
+        await RunRelocateAsync(node, () => Workspace.MoveAsync(node.Path, folder), "Moved");
+    }
+
+    async Task RunRelocateAsync(KnowledgeNode node, Func<Task<RenameResult>> action, string verb)
+    {
+        try
+        {
+            var result = await action();
+            State.RenamePath(node.Path, result.NewPath);
+            var updated = result.PagesChanged == 1 ? "1 page updated" : $"{result.PagesChanged} pages updated";
+            if (result.FailedPages.Count > 0)
+            {
+                await Dialogs.ChooseAsync($"{verb} with warnings", $"{verb} to {result.NewPath}. {updated}, but links in these pages couldn't be updated:",
+                    [new("OK", "ok", ButtonStyle.Primary, Variant.Filled, Default: true)], "warning", "wa", result.FailedPages);
+            }
+            else
+            {
+                Notify.Notify(NotificationSeverity.Success, $"{verb}. {updated}.", "", TimeSpan.FromSeconds(4));
+            }
+            if (SelectedPath is not null &&
+                (string.Equals(SelectedPath, node.Path, StringComparison.OrdinalIgnoreCase) || SelectedPath.StartsWith(node.Path + "/", StringComparison.OrdinalIgnoreCase)))
+                await OpenAsync(result.NewPath + SelectedPath[node.Path.Length..]);
+        }
+        catch (KnowledgeException ex) { ShowError(ex); }
+    }
+
+    async Task DeleteAsync(KnowledgeNode node)
+    {
+        FolderStats stats;
+        try { stats = await Workspace.GetFolderStatsAsync(node.Path); }
+        catch (KnowledgeException ex) { ShowError(ex); return; }
+
+        var backup = Host.HasBackup ? Services.GetService(typeof(IBackupService)) as IBackupService : null;
+        Func<Task>? export = backup is null ? null : async () =>
+        {
+            try { await backup.ExportAsync(); }
+            catch (Exception ex) { Notify.Notify(NotificationSeverity.Error, "Export failed", ex.Message); }
+        };
+        if (!await Dialogs.ConfirmDeleteAsync(node, stats, Host.DeletesAreRecoverable, export)) return;
+
+        try
+        {
+            await Workspace.DeleteAsync(node.Path);
+            State.SetUnsaved(node.Path, false);
+            Notify.Notify(NotificationSeverity.Success, $"Deleted {node.Name}.", "", TimeSpan.FromSeconds(4));
+        }
+        catch (KnowledgeException ex) { ShowError(ex); }
+    }
+
+    // ------------------------------------------------------------ drag and drop
+
+    void OnDragOver(string target)
+    {
+        if (dragSource is null) return;
+        if (target.Length > 0 && (!nodes.TryGetValue(target, out var n) || !n.IsFolder)) return;
+        dropTarget = target;
+    }
+
+    void OnDragLeave(string target)
+    {
+        if (dropTarget == target) dropTarget = null;
+    }
+
+    bool CanDrop(string target) => DropError(target) is null;
+
+    string? DropError(string target)
+    {
+        if (dragSource is null) return "Nothing to move.";
+        if (!nodes.TryGetValue(dragSource, out var source)) return "Nothing to move.";
+        if (string.Equals(LinkResolver.FolderOf(dragSource), target, StringComparison.OrdinalIgnoreCase)) return "It's already in this folder.";
+        if (source.IsFolder && (string.Equals(target, dragSource, StringComparison.OrdinalIgnoreCase) || target.StartsWith(dragSource + "/", StringComparison.OrdinalIgnoreCase)))
+            return "A folder can't be moved into itself or one of its subfolders.";
+        return null;
+    }
+
+    async Task OnDropAsync(string target)
+    {
+        var source = dragSource;
+        var ok = CanDrop(target);
+        var error = DropError(target);
+        dragSource = null;
+        dropTarget = null;
+        if (source is null || !nodes.TryGetValue(source, out var node)) return;
+        if (!ok)
+        {
+            Notify.Notify(NotificationSeverity.Warning, "Can't move here", error ?? "", TimeSpan.FromSeconds(5));
+            return;
+        }
+        if (!await EnsureSavedAsync(node)) return;
+        await RunRelocateAsync(node, () => Workspace.MoveAsync(source, target), "Moved");
+    }
+
+    void ShowError(KnowledgeException ex) => PageCommands.ShowError(Notify, ex);
+
+    public void Dispose()
+    {
+        Workspace.Changed -= OnWorkspaceChanged;
+        State.Changed -= OnStateChanged;
+        searchCts?.Cancel();
+    }
+}
