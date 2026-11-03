@@ -1,0 +1,219 @@
+@page "/help"
+@inject IHostCapabilities Host
+@inject NavigationManager Nav
+@inject IKnowledgeWorkspace Workspace
+
+<PageTitle>Help · Knowledge Graph Builder</PageTitle>
+
+<div class="kgb-help-page">
+    <nav class="kgb-help-toc" aria-label="Help topics">
+        <div class="kgb-pt" style="padding:0 10px 6px">On this page</div>
+        @foreach (var (id, title, icon) in Sections)
+        {
+            <a href="@($"help#{id}")"><span class="mi s16" aria-hidden="true">@icon</span>@title</a>
+        }
+    </nav>
+
+    <article class="kgb-help-doc">
+        <header class="kgb-help-hero">
+            <div class="grow">
+                <h1>Knowledge Graph Builder help</h1>
+                <p>Knowledge Graph Builder keeps your notes as Markdown pages that link to each other. You write and link pages, see how they connect in a graph, and ask an AI assistant questions that it answers from your own pages.</p>
+            </div>
+            <div class="kgb-help-cta">
+                <RadzenButton Text="Start the guided tour" Icon="tour" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Large" Click="@StartTour" />
+                <span class="xs t3">A 2-minute walk through the workspace.</span>
+            </div>
+        </header>
+
+        <section id="start">
+            <h2><span class="mi" aria-hidden="true">rocket_launch</span>Getting started</h2>
+            <p>The <b>Workspace</b> has three panes side by side: the <b>Explorer</b> on the left lists your pages, the <b>Editor</b> in the middle shows the open page, and <b>Chat</b> on the right talks to the AI assistant. The links at the top go to the <b>Graph</b>, <b>Settings</b> and this help guide.</p>
+            <Shot Name="workspace" Caption="The workspace: Explorer, Editor with its Links panel, and Chat." />
+            <ol>
+                <li>Click <b>Welcome</b> in the Explorer to open the starter page.</li>
+                <li>Open <b>Settings</b>, pick an AI provider and add your API key (see <a href="help#settings">Settings</a>). Everything except Chat works without one.</li>
+                <li>Create a page with the <span class="mi s16" aria-hidden="true">note_add</span> button and link it to others with <code>[[Page name]]</code>.</li>
+                <li>Open the <b>Graph</b> to see how your pages connect.</li>
+            </ol>
+            <div class="kgb-help-note">
+                <span class="mi" aria-hidden="true">@(Host.IsBrowser ? "public" : "folder")</span>
+                @if (Host.IsBrowser)
+                {
+                    <span>In the browser, pages are saved in this browser's storage for this site. Use <b>Settings → Backup and storage → Export</b> now and then so you have a copy.</span>
+                }
+                else
+                {
+                    <span>In the Windows app, pages are plain <code>.md</code> files in <code>@Host.RootDisplay</code>. You can open and edit them with other tools too.</span>
+                }
+            </div>
+            <p>On a small screen the three panes become tabs: <b>Explorer</b>, <b>Editor</b> and <b>Chat</b>. The top links show only their icons.</p>
+            <Shot Name="mobile" Caption="On a phone the panes are tabs." Narrow="true" />
+        </section>
+
+        <section id="pages">
+            <h2><span class="mi" aria-hidden="true">folder</span>Pages and folders</h2>
+            <p>The Explorer shows your folders and pages as a tree. Click a page to open it. The buttons at the top create a page, create a folder, refresh the list and collapse every folder.</p>
+            <Shot Name="explorer-menu" Caption="Right-click a page or folder for more commands." Narrow="true" />
+            <ul>
+                <li><b>New page</b> and <b>New folder</b> create the item inside the selected folder.</li>
+                <li><b>Rename</b> (<span class="kbd">F2</span>) renames a page or folder. Links to it in other pages are updated for you.</li>
+                <li><b>Move to…</b> moves it to another folder, and also updates links.</li>
+                <li><b>Delete</b> (<span class="kbd">Del</span>) asks first, and offers to export a backup before deleting.</li>
+            </ul>
+            <h3>Searching</h3>
+            <p>Type in <b>Search pages</b> to search titles and text. Results show where the words appear. Click a result to open it, and press <span class="kbd">Esc</span> to clear the search.</p>
+            <Shot Name="search" Caption="Search results with the matching words highlighted." Narrow="true" />
+        </section>
+
+        <section id="editing">
+            <h2><span class="mi" aria-hidden="true">edit_note</span>Editing pages</h2>
+            <p>The Editor has three views. Switch between them with the buttons at the top right of the page.</p>
+            <ul>
+                <li><b>Design</b> is a formatting editor with a toolbar for headings, lists, links, tables and more.</li>
+                <li><b>Source</b> shows the Markdown text itself.</li>
+                <li><b>Preview</b> shows the finished page. Its links are clickable.</li>
+            </ul>
+            <Shot Name="editor-source" Caption="Source view, with the page's Properties above the text." />
+            <p><b>Properties</b> holds the page's front matter: YAML settings such as <code>title</code>, <code>tags</code> and <code>aliases</code>. If the YAML has a mistake, the editor shows an <b>Invalid YAML</b> badge.</p>
+            <p>A dot next to the title means the page has unsaved changes. Press <span class="kbd">Ctrl+S</span> or click <b>Save</b>. <b>Revert</b> throws the changes away. If you try to leave a page with unsaved changes, the app asks whether to save them.</p>
+        </section>
+
+        <section id="links">
+            <h2><span class="mi" aria-hidden="true">link</span>Linking pages</h2>
+            <p>Link one page to another by putting its name in double square brackets.</p>
+            <table class="kgb-help-table">
+                <thead><tr><th>You write</th><th>It links to</th></tr></thead>
+                <tbody>
+                    <tr><td><code>[[Welcome]]</code></td><td>The page named Welcome, in any folder.</td></tr>
+                    <tr><td><code>[[Getting Started/Install]]</code></td><td>A page by its path, when two pages share a name.</td></tr>
+                    <tr><td><code>[[Install#API key]]</code></td><td>A heading inside a page.</td></tr>
+                    <tr><td><code>[[Install|setup guide]]</code></td><td>Install, shown as the text "setup guide".</td></tr>
+                    <tr><td><code>[[Chat]]</code></td><td>A page that lists <code>Chat</code> under <code>aliases</code> in its properties.</td></tr>
+                </tbody>
+            </table>
+            <p>The <b>Links</b> panel under each page has three lists:</p>
+            <ul>
+                <li><b>Outgoing</b>: pages this page links to.</li>
+                <li><b>Backlinks</b>: pages that link to this one, with the line number.</li>
+                <li><b>Unresolved</b>: links to pages that don't exist yet. Click <b>Create</b> to make the page.</li>
+            </ul>
+            <Shot Name="links-panel" Caption="The Links panel. An unresolved link can be created with one click." />
+            <p><b>Show in graph</b> opens the Graph centered on this page.</p>
+        </section>
+
+        <section id="chat">
+            <h2><span class="mi" aria-hidden="true">forum</span>Chatting with the AI</h2>
+            <p>Ask questions about your pages in the Chat pane and press <span class="kbd">Enter</span> to send (<span class="kbd">Shift+Enter</span> adds a new line). The assistant searches and reads your pages to answer. Pages it used appear as links you can click to open.</p>
+            <Shot Name="chat-answer" Caption="An answer that cites the pages it came from." Narrow="true" />
+            <h3>Approving changes</h3>
+            <p>The assistant can create, edit, rename, move and delete pages, but it never changes anything on its own. Each change appears as a card with a diff: green lines are added and red lines are removed.</p>
+            <Shot Name="chat-approval" Caption="A proposed new page in the full-size diff view. Nothing is written until you click Apply." />
+            <ul>
+                <li><b>Apply</b> makes the change. <b>Reject</b> skips it, and the assistant is told you said no.</li>
+                <li>The <span class="mi s16" aria-hidden="true">open_in_full</span> button opens a larger view of the diff.</li>
+                <li>Sending a new message skips the changes that are still waiting.</li>
+                <li><b>New chat</b> starts a fresh conversation.</li>
+            </ul>
+            <div class="kgb-help-note"><span class="mi" aria-hidden="true">shield</span><span>Page text the assistant reads is sent to the AI provider you chose in Settings. Ollama runs on your own machine, so nothing leaves it.</span></div>
+        </section>
+
+        <section id="graph">
+            <h2><span class="mi" aria-hidden="true">hub</span>The graph</h2>
+            <p>The Graph page draws each page as a dot and each link as a line. Colors show folders, and dashed outlines are linked pages that don't exist yet.</p>
+            <Shot Name="graph" Caption="The whole graph with a page selected. The panel shows the page and its connections." />
+            <ul>
+                <li><b>Whole graph</b> shows every page. <b>Around page</b> shows only the pages near the selected one, up to the depth you choose.</li>
+                <li><b>Missing pages</b> shows or hides the dashed pages that don't exist yet.</li>
+                <li><b>Find a node</b> finds pages by title, path and text. Press <span class="kbd">Enter</span> to jump to the next match and <span class="kbd">Esc</span> to clear.</li>
+                <li>Scroll to zoom, drag the background to pan, and drag a dot to move it. When you zoom in, every page shows its name. <span class="mi s16" aria-hidden="true">fit_screen</span> fits the whole graph back on screen.</li>
+                <li>Click a folder in the legend to hide or show its pages. <b>Show all</b> brings them all back.</li>
+                <li>Click a dot to open the side panel. It shows the page text and the pages it connects to, with <b>Open</b> and <b>Show around</b> buttons. Links in the panel select that page in the graph.</li>
+            </ul>
+        </section>
+
+        <section id="settings">
+            <h2><span class="mi" aria-hidden="true">settings</span>Settings</h2>
+            <h3>AI provider</h3>
+            <p>Choose who answers in Chat: <b>Anthropic</b>, <b>OpenAI</b>, <b>Azure OpenAI</b> (which also needs your endpoint, and uses your deployment name as the model), or <b>Ollama</b> on your own machine. Then pick a model from the list. <span class="mi s16" aria-hidden="true">refresh</span> reloads the list, and <b>Type a name instead</b> lets you enter any model name.</p>
+            <Shot Name="settings-ai" Caption="AI provider settings." />
+            <ol>
+                <li>Pick the provider and model.</li>
+                <li>Paste your API key. It's saved only on this device and sent only to that provider.</li>
+                <li>Click <b>Test connection</b> to check it, then <b>Save</b>.</li>
+            </ol>
+            <p>Once a key is saved, it shows as <b>Configured</b>. Use <b>Replace</b> to enter a new one, or <b>Clear key</b> to remove it.</p>
+            @if (Host.HasBackup)
+            {
+                <h3>Backup and storage</h3>
+                <p>The bar shows how much of the browser's storage your pages use. <b>Export (.zip)</b> downloads every page and folder. Your settings and API key are never included. <b>Import (.zip)</b> brings pages back in: <b>Merge</b> adds pages that don't exist yet, and <b>Replace</b> deletes every page first.</p>
+                <Shot Name="settings-backup" Caption="Backup and storage in the browser app." />
+            }
+            <h3>Graph and appearance</h3>
+            <p>The <b>Graph</b> card shows how many pages, links and unresolved links you have. <b>Rebuild graph</b> re-reads every page, which is useful after you edit files outside the app. Switch between the light and dark theme with <span class="mi s16" aria-hidden="true">dark_mode</span> at the top right.</p>
+        </section>
+
+        <section id="keys">
+            <h2><span class="mi" aria-hidden="true">keyboard</span>Keyboard shortcuts</h2>
+            <table class="kgb-help-table">
+                <thead><tr><th>Keys</th><th>Where</th><th>What it does</th></tr></thead>
+                <tbody>
+                    <tr><td><span class="kbd">Ctrl+S</span></td><td>Editor</td><td>Save the page</td></tr>
+                    <tr><td><span class="kbd">F2</span></td><td>Explorer</td><td>Rename the selected page or folder</td></tr>
+                    <tr><td><span class="kbd">Del</span></td><td>Explorer</td><td>Delete the selected page or folder</td></tr>
+                    <tr><td><span class="kbd">Esc</span></td><td>Explorer search, Graph find</td><td>Clear the search</td></tr>
+                    <tr><td><span class="kbd">Enter</span></td><td>Chat</td><td>Send the message</td></tr>
+                    <tr><td><span class="kbd">Shift+Enter</span></td><td>Chat</td><td>Add a new line</td></tr>
+                    <tr><td><span class="kbd">Enter</span></td><td>Graph find</td><td>Jump to the next match</td></tr>
+                    <tr><td><span class="kbd">←</span> <span class="kbd">→</span> <span class="kbd">Esc</span></td><td>Guided tour</td><td>Previous step, next step, close</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="tour">
+            <h2><span class="mi" aria-hidden="true">tour</span>The guided tour</h2>
+            <p>The tour points at each part of the workspace in turn and explains it. Use <b>Next</b> and <b>Back</b> or the arrow keys, and close it at any time with <span class="kbd">Esc</span> or the ×.</p>
+            <Shot Name="tour" Caption="The first step of the guided tour." />
+            <RadzenButton Text="Start the guided tour" Icon="tour" ButtonStyle="ButtonStyle.Primary" Click="@StartTour" />
+        </section>
+
+        <section id="faq">
+            <h2><span class="mi" aria-hidden="true">quiz</span>Questions and fixes</h2>
+            <dl class="kgb-help-faq">
+                <dt>Chat says "Configure an API key in Settings".</dt>
+                <dd>Open Settings, choose a provider, paste your key and click Save. Test connection tells you whether the key works.</dd>
+                <dt>A link shows as unresolved, but the page exists.</dt>
+                <dd>Check the spelling, or link by path, such as <code>[[Folder/Page]]</code>. If you changed files outside the app, click Rebuild graph in Settings.</dd>
+                <dt>I renamed a page. Are my links broken?</dt>
+                <dd>No. Renaming or moving a page in the Explorer updates the links in your other pages.</dd>
+                @if (Host.IsBrowser)
+                {
+                    <dt>Where are my pages?</dt>
+                    <dd>In this browser's storage for this site. Another browser or profile has its own pages. Clearing site data removes them, so export a backup first.</dd>
+                }
+                <dt>Is my API key safe?</dt>
+                <dd>It's stored on this device and sent only to the provider you chose. It's never included in backups. Use a key with a spending limit, and clear it on shared computers.</dd>
+            </dl>
+        </section>
+    </article>
+</div>
+
+@code {
+    static readonly (string Id, string Title, string Icon)[] Sections =
+    [
+        ("start", "Getting started", "rocket_launch"),
+        ("pages", "Pages and folders", "folder"),
+        ("editing", "Editing pages", "edit_note"),
+        ("links", "Linking pages", "link"),
+        ("chat", "Chatting with the AI", "forum"),
+        ("graph", "The graph", "hub"),
+        ("settings", "Settings", "settings"),
+        ("keys", "Keyboard shortcuts", "keyboard"),
+        ("tour", "The guided tour", "tour"),
+        ("faq", "Questions and fixes", "quiz"),
+    ];
+
+    // The tour lives on the workspace; open Welcome first when there is one, so the Links panel is part of it.
+    async Task StartTour() =>
+        Nav.NavigateTo(await Workspace.ExistsAsync("Welcome.md") ? "./?p=Welcome.md&tour=1" : "./?tour=1");
+}

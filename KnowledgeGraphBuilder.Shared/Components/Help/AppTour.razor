@@ -1,0 +1,92 @@
+@using GuideFlow.Components
+@using GuideFlow.Models
+@using GfPlacement = GuideFlow.Enums.Placement
+@inject IJSRuntime JS
+
+@* The guided tour of the workspace (GuideFlow). Wide windows point at the three panes; narrow ones point at the tabs,
+   since only one pane is visible at a time. Steps target data-tour attributes so styling changes don't break them. *@
+<GuideFlowTour @ref="tour" TourName="kgb-workspace" TourOptions="options">
+    @if (Wide)
+    {
+        <GuideFlowStep Element="[data-tour=explorer]" Title="Your pages" Order="0" Side="GfPlacement.Right">
+            <p>Every page is a Markdown file. Folders group them. Click a page to open it, search with the box at the top, and right-click for rename, move and delete.</p>
+        </GuideFlowStep>
+        <GuideFlowStep Element="[data-tour=editor]" Title="Edit a page" Order="1" Side="GfPlacement.Auto">
+            <p>Write in <b>Design</b>, <b>Source</b> or <b>Preview</b>. Link pages with <code>[[Page name]]</code>. Save with <span class="kbd">Ctrl+S</span>.</p>
+        </GuideFlowStep>
+        @if (HasPage)
+        {
+            <GuideFlowStep Element="[data-tour=links]" Title="Links" Order="2" Side="GfPlacement.Top">
+                <p>Pages this one links to, pages that link back, and links to pages that don't exist yet. Click <b>Create</b> to make a missing page.</p>
+            </GuideFlowStep>
+        }
+        <GuideFlowStep Element="[data-tour=chat]" Title="Ask the AI" Order="@ChatOrder" Side="GfPlacement.Left">
+            <p>Ask questions about your pages. Answers cite pages as links. When the assistant wants to change a page, you see a diff and choose <b>Apply</b> or <b>Reject</b>.</p>
+        </GuideFlowStep>
+    }
+    else
+    {
+        <GuideFlowStep Element="[data-tour=tab-explorer]" Title="Your pages" Order="0" Side="GfPlacement.Bottom">
+            <p>On a small screen the workspace has three tabs. <b>Explorer</b> lists your pages and folders; search, open, rename and move them here.</p>
+        </GuideFlowStep>
+        <GuideFlowStep Element="[data-tour=tab-editor]" Title="Edit a page" Order="1" Side="GfPlacement.Bottom">
+            <p><b>Editor</b> shows the open page. Link pages with <code>[[Page name]]</code> and save with the Save button.</p>
+        </GuideFlowStep>
+        <GuideFlowStep Element="[data-tour=tab-chat]" Title="Ask the AI" Order="@ChatOrder" Side="GfPlacement.Bottom">
+            <p><b>Chat</b> answers from your pages and proposes changes as diffs you approve.</p>
+        </GuideFlowStep>
+    }
+    <GuideFlowStep Element="[data-tour=nav-graph]" Title="See the graph" Order="@(ChatOrder + 1)" Side="GfPlacement.Bottom">
+        <p>A picture of how your pages link together. Filter by folder, search, and click a node to read the page.</p>
+    </GuideFlowStep>
+    <GuideFlowStep Element="[data-tour=nav-settings]" Title="Settings" Order="@(ChatOrder + 2)" Side="GfPlacement.Bottom">
+        <p>Choose an AI provider and model, add your API key, back up your pages and rebuild the graph.</p>
+    </GuideFlowStep>
+    <GuideFlowStep Element="[data-tour=nav-help]" Title="Help is always here" Order="@(ChatOrder + 3)" Side="GfPlacement.BottomEnd">
+        <p>The help guide explains every feature with pictures, and you can restart this tour from it at any time.</p>
+    </GuideFlowStep>
+</GuideFlowTour>
+
+@code {
+    /// <summary>True when the three panes are side by side.</summary>
+    [Parameter] public bool Wide { get; set; }
+
+    /// <summary>True when a page is open, so the Links panel is on screen.</summary>
+    [Parameter] public bool HasPage { get; set; }
+
+    // GuideFlow stops at a gap in the step order, so the steps after Links move up when it isn't shown.
+    int ChatOrder => Wide && HasPage ? 3 : 2;
+
+    GuideFlowTour? tour;
+    Task? moduleReady;
+
+    readonly TourOptions options = new()
+    {
+        ShowProgress = true,
+        ShowProgressBar = true,
+        PopoverClass = "kgb-tour",
+        OverlayOpacity = 0.45,
+        StagePadding = 4,
+        StageRadius = 8,
+        DoneBtnText = "Finish",
+    };
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        // GuideFlowTour imports its JS module after its first render and quietly does nothing until it has it, so
+        // load the same module here and only start once it is there.
+        if (firstRender) moduleReady = JS.InvokeAsync<IJSObjectReference>("import", "./_content/GuideFlow/guideflow.module.js").AsTask();
+    }
+
+    public async Task StartAsync()
+    {
+        if (tour is null) return;
+        if (moduleReady is not null)
+        {
+            try { await moduleReady; } catch (JSException) { return; }
+        }
+        // The tour's own import of the module finishes on the next turn of the event loop.
+        await Task.Delay(50);
+        await tour.DriveAsync(0);
+    }
+}

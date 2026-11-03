@@ -1,3 +1,4 @@
+using GuideFlow.Services;
 using KnowledgeGraphBuilder.Shared.Chat;
 using KnowledgeGraphBuilder.Shared.Knowledge;
 using KnowledgeGraphBuilder.Shared.Services;
@@ -39,6 +40,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<KnowledgeGraphBuilder.Shared.Components.Chat.ChatTranscript>();
         // Scoped: in MAUI, IJSRuntime is scoped to the BlazorWebView, so a singleton would capture the root one and fail.
         services.AddScoped<BrowserInterop>();
+        services.AddGuideFlow();
         return services;
     }
 }

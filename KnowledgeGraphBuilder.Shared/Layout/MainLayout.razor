@@ -16,9 +16,10 @@
         </a>
         <span class="kgb-rootchip" title="@Host.RootPath"><span class="mi s14" aria-hidden="true">@(Host.IsBrowser ? "public" : "folder")</span>@Host.RootDisplay</span>
         <span class="grow"></span>
-        <NavLink class="kgb-nav" href="./" Match="NavLinkMatch.All" ActiveClass="active"><span class="mi s16" aria-hidden="true">edit_note</span>Workspace</NavLink>
-        <NavLink class="kgb-nav" href="graph" ActiveClass="active"><span class="mi s16" aria-hidden="true">hub</span>Graph</NavLink>
-        <NavLink class="kgb-nav" href="settings" ActiveClass="active"><span class="mi s16" aria-hidden="true">settings</span>Settings</NavLink>
+        <NavLink class="kgb-nav" href="./" Match="NavLinkMatch.All" ActiveClass="active" title="Workspace" data-tour="nav-workspace"><span class="mi s16" aria-hidden="true">edit_note</span><span class="lbl">Workspace</span></NavLink>
+        <NavLink class="kgb-nav" href="graph" ActiveClass="active" title="Graph" data-tour="nav-graph"><span class="mi s16" aria-hidden="true">hub</span><span class="lbl">Graph</span></NavLink>
+        <NavLink class="kgb-nav" href="settings" ActiveClass="active" title="Settings" data-tour="nav-settings"><span class="mi s16" aria-hidden="true">settings</span><span class="lbl">Settings</span></NavLink>
+        <NavLink class="kgb-nav kgb-nav-help" href="help" ActiveClass="active" title="Help guide and guided tour" data-tour="nav-help"><span class="mi s16" aria-hidden="true">help</span>Help</NavLink>
         @if (Host.CanToggleTheme)
         {
             <RadzenAppearanceToggle LightTheme="material" DarkTheme="material-dark" Variant="Variant.Text" ButtonStyle="ButtonStyle.Base" />

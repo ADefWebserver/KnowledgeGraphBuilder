@@ -1,0 +1,15 @@
+@* A help-guide screenshot from wwwroot/help, taken in the light theme. *@
+<figure class="kgb-shot @(Narrow ? "narrow" : null)">
+    <img src="@($"_content/KnowledgeGraphBuilder.Shared/help/{Name}.png")" alt="@Caption" loading="lazy" />
+    <figcaption>@Caption</figcaption>
+</figure>
+
+@code {
+    /// <summary>File name in wwwroot/help, without ".png".</summary>
+    [Parameter, EditorRequired] public string Name { get; set; } = "";
+
+    [Parameter, EditorRequired] public string Caption { get; set; } = "";
+
+    /// <summary>Shows a tall or cropped picture at a smaller width.</summary>
+    [Parameter] public bool Narrow { get; set; }
+}

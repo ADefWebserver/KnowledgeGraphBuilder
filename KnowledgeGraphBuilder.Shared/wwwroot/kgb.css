@@ -51,6 +51,16 @@ body { background: var(--rz-base-background-color, #f6f6f9); }
 .kgb-rootchip { display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 8px; border-radius: 12px; background: var(--sur); border: 1px solid var(--bd); color: var(--tx2); font-size: 12px; white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
 .kgb-nav { color: var(--tx2); text-decoration: none; display: inline-flex; gap: 5px; align-items: center; height: 28px; padding: 0 8px; border-radius: 4px; font-weight: 500; font-size: 13px; }
 .kgb-nav.active { color: var(--pr); background: var(--prs); }
+/* Help stands out from the other links so it's easy to find. */
+.kgb-nav-help { color: var(--onpr); background: var(--pr); border-radius: 14px; padding: 0 12px 0 10px; margin-left: 4px; }
+.kgb-nav-help:hover { filter: brightness(1.1); }
+.kgb-nav-help.active { color: var(--onpr); background: var(--pr); box-shadow: 0 0 0 2px var(--prs2); }
+@media (max-width: 719px) {
+    .kgb-header { gap: 4px; padding: 0 4px 0 10px; }
+    .kgb-appname, .kgb-rootchip, .kgb-nav .lbl { display: none; }
+    .kgb-nav { min-width: 36px; height: 36px; justify-content: center; padding: 0 8px; }
+    .kgb-nav-help { height: 30px; }
+}
 
 /* panes */
 .kgb-workspace { flex: 1; min-height: 0; display: flex; flex-direction: column; }
@@ -241,7 +251,7 @@ body { background: var(--rz-base-background-color, #f6f6f9); }
 .kgb-gnode.found circle { stroke: var(--hltx); stroke-width: 2.5; }
 .kgb-gnode.found text { fill: var(--tx); font-weight: 600; }
 .kgb-gnode.dim { opacity: .25; }
-.kgb-gsvg.hovering .kgb-gnode:not(.hl) { opacity: .25; }
+.kgb-gsvg.hovering .kgb-gnode:not(.hl):not(.selected) { opacity: .25; }
 .kgb-gsvg.hovering .kgb-gedge:not(.hl) { opacity: .15; }
 .kgb-gedge.hl { stroke: var(--gedge-hl); stroke-width: 2; }
 .kgb-gpanel { position: absolute; top: 0; right: 0; bottom: 0; width: 340px; background: var(--panel); border-left: 1px solid var(--bd); box-shadow: var(--sh); padding: 10px 12px 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
@@ -271,4 +281,56 @@ body { background: var(--rz-base-background-color, #f6f6f9); }
     .kgb-gpanel { top: auto; left: 0; width: auto; max-height: 55%; border-left: 0; border-top: 1px solid var(--bd); }
     .kgb-gwrap.has-panel .kgb-glegend { display: none; }
     .kgb-ghint { display: none !important; }
+}
+
+/* Guided tour (GuideFlow): popovers use the app's colors in both themes. */
+.kgb-tour {
+    --gf-popover-bg: var(--panel); --gf-popover-radius: 10px; --gf-popover-max-width: 340px;
+    --gf-font-family: inherit; --gf-title-color: var(--tx); --gf-title-size: 15px; --gf-text-color: var(--tx2); --gf-text-size: 13px;
+    --gf-btn-radius: 6px; --gf-btn-primary-bg: var(--pr); --gf-btn-primary-color: var(--onpr);
+    --gf-btn-secondary-bg: var(--sur); --gf-btn-secondary-color: var(--tx);
+    --gf-progress-bg: var(--sur2); --gf-progress-color: var(--pr);
+    border: 1px solid var(--bd);
+}
+.kgb-tour p { margin: 0 0 4px; line-height: 1.5; }
+.kgb-tour code { font-size: 12px; background: var(--sur); padding: 0 4px; border-radius: 3px; }
+
+/* Help guide */
+.kgb-help-page { flex: 1; min-height: 0; overflow: auto; display: grid; grid-template-columns: 220px minmax(0, 860px); justify-content: center; gap: 32px; padding: 24px 24px 64px; background: var(--bg); scroll-behavior: smooth; }
+.kgb-help-toc { position: sticky; top: 0; align-self: start; display: flex; flex-direction: column; gap: 2px; padding-top: 8px; }
+.kgb-help-toc a { display: flex; gap: 8px; align-items: center; padding: 6px 10px; border-radius: 6px; color: var(--tx2); text-decoration: none; font-size: 13px; }
+.kgb-help-toc a:hover { background: var(--sur); color: var(--tx); }
+.kgb-help-doc { color: var(--tx); font-size: 14px; line-height: 1.6; min-width: 0; }
+.kgb-help-doc section { background: var(--panel); border: 1px solid var(--bd); border-radius: 10px; padding: 20px 24px; margin-top: 16px; scroll-margin-top: 16px; }
+.kgb-help-doc h1 { font-size: 24px; font-weight: 600; margin: 0 0 6px; }
+.kgb-help-doc h2 { display: flex; gap: 10px; align-items: center; font-size: 18px; font-weight: 600; margin: 0 0 10px; }
+.kgb-help-doc h2 .mi { color: var(--pr); }
+.kgb-help-doc h3 { font-size: 15px; font-weight: 600; margin: 18px 0 6px; }
+.kgb-help-doc p { margin: 0 0 10px; color: var(--tx2); }
+.kgb-help-doc li { color: var(--tx2); margin-bottom: 4px; }
+.kgb-help-doc b { color: var(--tx); font-weight: 600; }
+.kgb-help-doc code { font-size: 12.5px; background: var(--sur); border: 1px solid var(--bd); padding: 0 5px; border-radius: 4px; }
+.kgb-help-doc a { color: var(--pr); }
+.kgb-help-doc .mi.s16 { vertical-align: -3px; }
+.kgb-help-hero { display: flex; gap: 24px; align-items: center; background: linear-gradient(135deg, var(--prs), var(--panel)); border: 1px solid var(--prs2); border-radius: 12px; padding: 24px; }
+.kgb-help-hero p { margin: 0; }
+.kgb-help-cta { display: flex; flex-direction: column; gap: 6px; align-items: center; flex: none; }
+.kgb-help-note { display: flex; gap: 10px; align-items: flex-start; background: var(--sur); border: 1px solid var(--bd); border-radius: 8px; padding: 10px 12px; margin: 12px 0; color: var(--tx2); }
+.kgb-help-note .mi { color: var(--pr); }
+.kgb-help-table { border-collapse: collapse; width: 100%; margin: 6px 0 12px; font-size: 13px; }
+.kgb-help-table th, .kgb-help-table td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--bd); vertical-align: top; color: var(--tx2); }
+.kgb-help-table th { color: var(--tx); font-weight: 600; background: var(--sur); }
+.kgb-help-faq dt { font-weight: 600; color: var(--tx); margin-top: 12px; }
+.kgb-help-faq dd { margin: 2px 0 0; color: var(--tx2); }
+.kgb-shot { margin: 14px 0 16px; }
+.kgb-shot img { display: block; max-width: 100%; height: auto; border: 1px solid var(--bd); border-radius: 8px; box-shadow: 0 2px 10px rgba(20, 20, 40, .08); background: #fff; }
+.kgb-shot.narrow img { max-width: min(100%, 460px); }
+.kgb-shot figcaption { font-size: 12px; color: var(--tx3); margin-top: 6px; }
+@media (max-width: 899px) {
+    .kgb-help-page { grid-template-columns: minmax(0, 1fr); padding: 16px 16px 48px; gap: 0; }
+    .kgb-help-toc { display: none; }
+    .kgb-help-hero { flex-direction: column; align-items: flex-start; padding: 18px; }
+    .kgb-help-cta { align-items: flex-start; }
+    .kgb-help-doc section { padding: 16px; }
+    .kgb-help-table { display: block; overflow-x: auto; }
 }

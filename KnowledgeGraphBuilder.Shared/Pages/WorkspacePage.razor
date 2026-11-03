@@ -30,13 +30,13 @@ else
     <div class="kgb-tabs">
         <RadzenTabs RenderMode="TabRenderMode.Client" SelectedIndex="@State.ActiveTab" SelectedIndexChanged="@(i => State.SetActiveTab(i))" Style="height:100%">
             <Tabs>
-                <RadzenTabsItem Text="Explorer" Icon="folder">
+                <RadzenTabsItem Text="Explorer" Icon="folder" data-tour="tab-explorer">
                     <ExplorerPane SelectedPath="@P" SelectionVersion="@selectionVersion" OnOpen="@OpenAsync" />
                 </RadzenTabsItem>
-                <RadzenTabsItem Text="Editor" Icon="edit_note" Template="@EditorTab">
+                <RadzenTabsItem Text="Editor" Template="@EditorTab" data-tour="tab-editor">
                     <EditorPane @ref="editor" Path="@P" OnCreatePage="@CreatePageAsync" OnNavigate="@OpenAsync" />
                 </RadzenTabsItem>
-                <RadzenTabsItem Text="Chat" Icon="forum" Template="@ChatTab">
+                <RadzenTabsItem Text="Chat" Template="@ChatTab" data-tour="tab-chat">
                     <ChatPane />
                 </RadzenTabsItem>
             </Tabs>
@@ -44,12 +44,19 @@ else
     </div>
 }
 
+<AppTour @ref="tour" Wide="@State.IsWide" HasPage="@(P is not null)" />
+
 @code {
     public const int Breakpoint = 900;
 
     [SupplyParameterFromQuery(Name = "p")] public string? P { get; set; }
 
+    /// <summary>"1" starts the guided tour (the Help page links here with it).</summary>
+    [SupplyParameterFromQuery(Name = "tour")] public string? Tour { get; set; }
+
     EditorPane? editor;
+    AppTour? tour;
+    bool tourPending;
     int selectionVersion;
     DotNetObjectReference<WorkspacePage>? self;
 
@@ -69,10 +76,20 @@ else
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender) return;
-        self = DotNetObjectReference.Create(this);
-        try { State.SetWide(await Browser.WatchWidthAsync(self, Breakpoint)); }
-        catch (JSException) { }
+        if (firstRender)
+        {
+            self = DotNetObjectReference.Create(this);
+            try { State.SetWide(await Browser.WatchWidthAsync(self, Breakpoint)); }
+            catch (JSException) { }
+        }
+        if (tourPending && tour is not null)
+        {
+            tourPending = false;
+            // Drop ?tour=1 so a reload or Back doesn't start it again, then wait for the layout (wide or tabs) to settle.
+            Nav.NavigateTo(P is null ? "./" : SafeMarkdown.PageHref(P), replace: true);
+            await Task.Delay(150);
+            await tour.StartAsync();
+        }
     }
 
     [JSInvokable]
@@ -84,6 +101,7 @@ else
     {
         if (P is not null && KnowledgePath.TryParse(P, isPage: true, out var page, out _)) P = page.Value;
         else P = null;
+        if (Tour == "1") tourPending = true;
     }
 
     async Task OpenAsync(string? path)

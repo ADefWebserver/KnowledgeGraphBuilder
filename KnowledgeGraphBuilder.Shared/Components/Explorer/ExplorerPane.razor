@@ -8,7 +8,7 @@
 @inject IServiceProvider Services
 @inject BrowserInterop Browser
 
-<section class="kgb-pane kgb-explorer" aria-label="Explorer">
+<section class="kgb-pane kgb-explorer" aria-label="Explorer" data-tour="explorer">
     <div class="kgb-ph">
         <span class="kgb-pt grow">Explorer</span>
         <RadzenButton Icon="note_add" Variant="Variant.Text" ButtonStyle="ButtonStyle.Base" Size="ButtonSize.Small" title="New page" aria-label="New page" Click="@(() => NewPageAsync(TargetFolder()))" />

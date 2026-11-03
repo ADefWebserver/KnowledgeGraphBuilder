@@ -7,7 +7,7 @@
 @inject BrowserInterop Browser
 @inject IHostCapabilities Host
 
-<section class="kgb-pane" aria-label="Editor">
+<section class="kgb-pane" aria-label="Editor" data-tour="editor">
     @if (Path is null)
     {
         <div class="kgb-empty">
@@ -22,6 +22,7 @@
                 <span class="kbd">Del</span><span>Delete in the tree</span>
                 <span class="kbd">Enter</span><span>Send a chat message</span>
             </div>
+            <div class="xs t3">New here? <a href="./?tour=1">Take the guided tour</a> or read the <a href="help">help guide</a>.</div>
         </div>
     }
     else if (loading)
