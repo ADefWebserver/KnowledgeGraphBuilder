@@ -64,6 +64,9 @@ body { background: var(--rz-base-background-color, #f6f6f9); }
 
 /* panes */
 .kgb-workspace { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.kgb-footer { flex: none; display: flex; justify-content: flex-end; align-items: center; height: 22px; padding: 0 12px; background: var(--panel); border-top: 1px solid var(--bd); font-size: 11px; }
+.kgb-footer a { color: var(--tx3); }
+.kgb-footer a:hover { color: var(--pr); }
 .kgb-workspace .rz-splitter { flex: 1; min-height: 0; border: 0; }
 .kgb-workspace .rz-splitter-pane { background: var(--panel); min-width: 0; }
 /* The editor pane takes the remaining width; the explorer and chat keep their sizes. */
