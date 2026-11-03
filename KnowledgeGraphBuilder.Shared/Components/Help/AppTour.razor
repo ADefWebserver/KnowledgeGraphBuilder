@@ -5,7 +5,7 @@
 
 @* The guided tour of the workspace (GuideFlow). Wide windows point at the three panes; narrow ones point at the tabs,
    since only one pane is visible at a time. Steps target data-tour attributes so styling changes don't break them. *@
-<GuideFlowTour @ref="tour" TourName="kgb-workspace" TourOptions="options">
+<GuideFlowTour @ref="tour" TourName="kgb-workspace" TourOptions="options" OnComplete="@SweepAsync" OnCancel="@SweepAsync">
     @if (Wide)
     {
         <GuideFlowStep Element="[data-tour=explorer]" Title="Your pages" Order="0" Side="GfPlacement.Right">
@@ -58,7 +58,7 @@
     int ChatOrder => Wide && HasPage ? 3 : 2;
 
     GuideFlowTour? tour;
-    Task? moduleReady;
+    Task<IJSObjectReference>? moduleReady;
 
     readonly TourOptions options = new()
     {
@@ -88,5 +88,16 @@
         // The tour's own import of the module finishes on the next turn of the event loop.
         await Task.Delay(50);
         await tour.DriveAsync(0);
+    }
+
+    // Ending the tour mid-transition (Esc or the last Next while the cutout is still animating) can leave GuideFlow's
+    // full-window overlay behind, which then swallows every click. Once the tour has settled, clear anything left.
+    async Task SweepAsync()
+    {
+        await Task.Delay(500);
+        if (tour is null || tour.IsActive || moduleReady is null) return;
+        try { await (await moduleReady).InvokeVoidAsync("destroy"); }
+        catch (JSException) { }
+        catch (JSDisconnectedException) { }
     }
 }
