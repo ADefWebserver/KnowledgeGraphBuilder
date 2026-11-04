@@ -2,6 +2,8 @@
 
 A workbench for a knowledge graph made of Markdown pages: a folder and page explorer, a Markdown editor with a Links panel (outgoing links, backlinks, unresolved links), and a chat that answers from the graph with `[[citations]]` and proposes page changes that you approve from a diff.
 
+**Try it live in your browser: [BlazorKnowledgeGraphBuilder.azurewebsites.net](https://blazorknowledgegraphbuilder.azurewebsites.net)** — no install needed. It's the WebAssembly app running entirely in your browser: your pages and settings are kept in your browser's local storage, and the chat uses your own API key, sent straight from your browser to the LLM provider.
+
 The design is in [Docs/KnowledgeGraphBuilder-Plan.md](Docs/KnowledgeGraphBuilder-Plan.md) and the UI mockups in [Docs/design](Docs/design/README.md).
 
 ## Projects
