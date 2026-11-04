@@ -1,0 +1,72 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+  html, body { margin: 0; width: 1280px; height: 640px; overflow: hidden; }
+  body {
+    font-family: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+    background:
+      radial-gradient(900px 600px at 85% 40%, rgba(120,110,255,.35), transparent 60%),
+      radial-gradient(700px 500px at 0% 100%, rgba(81,43,212,.45), transparent 60%),
+      linear-gradient(135deg, #1b1a4a 0%, #26237a 55%, #3330a8 100%);
+    color: #fff; position: relative;
+  }
+  .grid { position: absolute; inset: 0;
+    background-image: radial-gradient(rgba(255,255,255,.09) 1.2px, transparent 1.2px);
+    background-size: 28px 28px; }
+  .left { position: absolute; left: 80px; top: 0; bottom: 0; width: 640px;
+    display: flex; flex-direction: column; justify-content: center; }
+  .icon { width: 132px; height: 132px; border-radius: 30px; background: #fff;
+    display: grid; place-items: center; box-shadow: 0 18px 50px rgba(0,0,0,.35); margin-bottom: 36px; }
+  .icon img { width: 104px; height: 104px; }
+  h1 { font-size: 76px; line-height: 1.0; font-weight: 700; margin: 0 0 22px; letter-spacing: -1.5px; }
+  p { font-size: 27px; line-height: 1.35; margin: 0 0 30px; color: #d9d8ff; max-width: 600px; }
+  .chips { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 34px; }
+  .chip { font-size: 20px; padding: 8px 16px; border-radius: 999px;
+    background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.22); color: #fff; }
+  .url { font-size: 22px; color: #aeacff; font-weight: 600; }
+  svg.graph { position: absolute; right: 30px; top: 40px; width: 520px; height: 560px; }
+</style></head>
+<body>
+  <div class="grid"></div>
+  <div class="left">
+    <div class="icon"><img src="../KnowledgeGraphBuilder.Web/wwwroot/icon-192.png" alt=""></div>
+    <h1>Knowledge Graph<br>Builder</h1>
+    <p>Markdown pages linked into a graph, with an AI chat that answers from it and cites its sources.</p>
+    <div class="chips">
+      <span class="chip">[[Wiki links]]</span>
+      <span class="chip">Backlinks</span>
+      <span class="chip">Graph view</span>
+      <span class="chip">Blazor WebAssembly</span>
+    </div>
+    <div class="url">Try it live &rarr; blazorknowledgegraphbuilder.azurewebsites.net</div>
+  </div>
+
+  <svg class="graph" viewBox="0 0 520 560">
+    <g stroke="rgba(200,198,255,.55)" stroke-width="2.5" fill="none">
+      <line x1="260" y1="280" x2="120" y2="150"/>
+      <line x1="260" y1="280" x2="400" y2="130"/>
+      <line x1="260" y1="280" x2="440" y2="330"/>
+      <line x1="260" y1="280" x2="300" y2="470"/>
+      <line x1="260" y1="280" x2="100" y2="380"/>
+      <line x1="120" y1="150" x2="400" y2="130"/>
+      <line x1="400" y1="130" x2="440" y2="330"/>
+      <line x1="440" y1="330" x2="300" y2="470"/>
+      <line x1="100" y1="380" x2="300" y2="470"/>
+      <line x1="120" y1="150" x2="100" y2="380"/>
+      <line x1="400" y1="130" x2="470" y2="40" stroke-dasharray="6 7"/>
+      <line x1="100" y1="380" x2="40" y2="500" stroke-dasharray="6 7"/>
+    </g>
+    <g font-family="Segoe UI, sans-serif" font-size="19" fill="#fff" text-anchor="middle">
+      <circle cx="260" cy="280" r="34" fill="#aeacff"/>
+      <circle cx="260" cy="280" r="50" fill="none" stroke="rgba(174,172,255,.35)" stroke-width="2"/>
+      <text x="260" y="347" font-weight="600">Welcome</text>
+      <circle cx="120" cy="150" r="20" fill="#4ade80"/><text x="120" y="112">Getting Started</text>
+      <circle cx="400" cy="130" r="22" fill="#7c78ff"/><text x="400" y="92">Using Chat</text>
+      <circle cx="440" cy="330" r="18" fill="#38bdf8"/><text x="440" y="374">Graph</text>
+      <circle cx="300" cy="470" r="20" fill="#4ade80"/><text x="300" y="514">Linking Pages</text>
+      <circle cx="100" cy="380" r="18" fill="#7c78ff"/><text x="100" y="424">Install</text>
+      <circle cx="470" cy="40" r="11" fill="none" stroke="#c8c6ff" stroke-width="2.5" stroke-dasharray="4 4"/>
+      <circle cx="40" cy="500" r="11" fill="none" stroke="#c8c6ff" stroke-width="2.5" stroke-dasharray="4 4"/>
+    </g>
+  </svg>
+</body></html>
